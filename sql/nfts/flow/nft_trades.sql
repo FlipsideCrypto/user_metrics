@@ -34,11 +34,15 @@ SELECT
 COALESCE(sells.user_address, buys.user_address) AS user_address,
 COALESCE(sells.marketplace, buys.marketplace) AS marketplace,
 COALESCE(sells.nf_token_contract, buys.nf_token_contract) AS nf_token_contract,
-COALESCE(sells.currency, buys.currency) AS currency,
+'tbd' AS nft_project,
+COALESCE(sells.currency, buys.currency) AS token_contract,
+'tbd' AS token_symbol,
 COALESCE(n_buys, 0) AS n_buys,
-COALESCE(token_buy_volume, 0) AS token_buy_volume,
+COALESCE(token_buy_volume, 0) AS buy_token_volume,
+0 AS buy_usd_volume,
 COALESCE(n_sells, 0) AS n_sells,
-COALESCE(token_sell_volume, 0) AS token_sell_volume
+COALESCE(token_sell_volume, 0) AS sell_token_volume,
+0 AS sell_usd_volume,
 FROM sells
 FULL OUTER JOIN buys ON sells.user_address = buys.user_address
 AND sells.marketplace = buys.marketplace
