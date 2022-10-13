@@ -31,13 +31,18 @@ buys AS (
 
 SELECT
 COALESCE(sells.user_address, buys.user_address) AS user_address,
-COALESCE(sells.swap_contract, buys.swap_contract) AS swap_contract,
+COALESCE(sells.swap_contract, buys.swap_contract) AS protocol,
 COALESCE(sells.token_contract, buys.token_contract) AS token_contract,
+SPLIT_PART(token_contract, '.', 2) AS token_symbol,
+
 COALESCE(n_buys, 0) AS n_buys,
-COALESCE(token_buy_volume, 0) AS token_buy_volume,
 COALESCE(n_sells, 0) AS n_sells,
-COALESCE(token_sell_volume, 0) AS token_sell_volume
+COALESCE(token_buy_volume, 0) AS buy_token_volume,
+0 AS buy_usd_volume,
+COALESCE(token_sell_volume, 0) AS sell_token_volume,
+0 AS sell_usd_volume
 FROM sells
 FULL OUTER JOIN buys ON sells.user_address = buys.user_address
 AND sells.swap_contract = buys.swap_contract
 AND sells.token_contract = buys.token_contract
+
