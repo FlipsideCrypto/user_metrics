@@ -4,7 +4,6 @@ Folder Structure:
 
 sql
 - category
-- - metric_name
 - - - chain
 - - - - metric_name.sql
 - - - chain
