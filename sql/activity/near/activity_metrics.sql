@@ -1,5 +1,5 @@
 select A.tx_signer,
-SUM( CASE WHEN A.block_timestamp >= (current_date - {{metric_days}}) THEN 1 ELSE 0 END) AS n_transactions_daterange,
+SUM( CASE WHEN A.block_timestamp >= (current_date - 90) THEN 1 ELSE 0 END) AS n_transactions_daterange,
 COUNT(DISTINCT(A.block_timestamp::date)) AS n_days_active_ever,
 MIN(DATEDIFF('days', A.block_timestamp, CURRENT_TIMESTAMP)) AS days_since_last_txn_ever,
 
