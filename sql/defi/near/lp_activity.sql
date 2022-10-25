@@ -1,61 +1,134 @@
-WITH lp_stake AS (
-  Select Distinct 
-  tx_hash,
-  DEPOSIT / pow(10,24) as near_amount
-  from NEAR.CORE.FACT_ACTIONS_EVENTS_FUNCTION_CALL 
-  WHERE block_timestamp >= (current_date - 90)
-  AND method_name in ('deposit_and_stake', 'internal_deposit_and_stake', 'internal_manager_deposit_and_stake',
-  'manager_deposit_and_stake', 'manual_stake', 'stake', 'stake_all')
+with token_prices as (
+	select distinct token_contract, 
+      TRUNC(TIMESTAMP,'hour') as timestamp_h, 
+      avg(price_usd) as price_usd 
+  	from near.core.fact_prices
+  	where timestamp >= (current_date - 90)
+  	group by 1,2
 ),
-  total_stakes as (
-  SELECT p.tx_signer as trader,
-  p.TX_RECEIVER as protocol,
-  count(distinct p.tx_hash) as num_stake_transactions,
-  sum(lp_stake.near_amount) as near_stake_amt
-  FROM near.core.fact_transactions  p
-  inner JOIN lp_stake ON lp_stake.tx_hash = p.tx_hash
-  WHERE p.block_timestamp >= (current_date - 90)
-  and p.tx_status != 'Fail'
-  group by 1,2
+base_liquidity as (
+select distinct 
+a.block_timestamp,
+a.tx_hash, 
+b.tx_signer as user_address,
+a.method_name,
+parse_json(args) as args_parsed
+from "NEAR"."CORE"."FACT_ACTIONS_EVENTS_FUNCTION_CALL" a
+left join "NEAR"."CORE"."FACT_TRANSACTIONS" b
+on a.tx_hash = b.tx_hash
+where method_name in ('add_liquidity','remove_liquidity')
+  and a.block_timestamp >= (current_date - 90)
+limit 100
 ),
-lp_unstake as (
-select tx_hash, 
-    coalesce(PARSE_JSON(args):amount, PARSE_JSON(args):min_expected_near, PARSE_JSON(args):min_amount_out, NULL) as unstake,
-  case when contains(unstake, 'e') then 0
-  when contains(unstake, ',') then 0
-  when contains(unstake, 'o') then 0
-  when contains(unstake, 's') then 0
-  when contains(unstake, ' ') then 0
-  else unstake :: number / pow(10,24)
-  end as unstake_clean
-from NEAR.CORE.FACT_ACTIONS_EVENTS_FUNCTION_CALL 
-where method_name in ('complete_manual_unstake', 'decrease_stake', 'direct_unstake', 'inner_unstake', 'instant_unstake', 'internal_unstake',
-  'liquid_unstake', 'manual_unstake', 'unstake', 'unstake_all') 
-),
-  total_unstakes as (
-  SELECT p.tx_signer as trader,
-  p.TX_RECEIVER as protocol,
-  count(distinct p.tx_hash) as num_unstake_transactions,
-  sum (case when contains(tx:receipt[0]:outcome:logs :: string, 'unstaking ') and contains(tx:receipt[0]:outcome:logs :: string, '. Spent') 
-        then SUBSTRING(tx:receipt[0]:outcome:logs :: string, CHARINDEX('unstaking ', tx:receipt[0]:outcome:logs :: string) + Len('unstaking ')
-               , CHARINDEX('. Spent',tx:receipt[0]:outcome:logs :: string) - CHARINDEX('unstaking ', tx:receipt[0]:outcome:logs :: string) - Len('unstaking ')) :: number / pow(10,24)
-  else coalesce(lp_unstake.unstake_clean, 0 ) end)
-        as near_unstake_amt
-  FROM near.core.fact_transactions  p
-  inner JOIN lp_unstake ON lp_unstake.tx_hash = p.tx_hash
-  WHERE p.block_timestamp BETWEEN CURRENT_DATE -5 AND CURRENT_DATE
-      and p.tx_status != 'Fail'
-  GROUP BY 1,2
-) 
+liquidity_total as (
 select 
-  coalesce(a.trader, b.trader) as trader,
-  coalesce(a.protocol, b.protocol) as protocol,
-  a.num_stake_transactions,
-  a.near_stake_amt,
-  b.num_unstake_transactions,
-  b.near_unstake_amt
-  from total_stakes a
-  full join total_unstakes b 
-on a.trader = b.trader and a.protocol = b.protocol
+a.block_timestamp,
+a.tx_hash,
+a.receiver_id,
+b.user_address,
+b.args_parsed,
+b.method_name,
+logs,
+substring(logs[0],charindex('[',logs[0]),charindex(',',logs[0])-charindex('[',logs[0])) as token0_unclean,
+substring(logs[0],charindex(',',logs[0]),charindex(']',logs[0])-charindex(',',logs[0])) as token1_unclean,
+substring(token1_unclean,3) as token1_uncleaned,
+substring(token0_unclean,3,charindex(' ', token0_unclean)-3) :: number as token0_amt,
+substring(token0_unclean,charindex(' ', token0_unclean),len(token0_unclean)-charindex(' ', token0_unclean)) :: string as token0_name,
 
-
+substring(token1_uncleaned,2,charindex(' ', token1_uncleaned)-2) :: number as token1_amt,
+substring(token1_uncleaned,charindex(' ', token1_uncleaned),len(token1_uncleaned)-charindex(' ', token1_uncleaned)) :: string as token1_name
+from "NEAR"."CORE"."FACT_RECEIPTS" a
+inner join base_liquidity b
+on a.tx_hash = b.tx_hash
+where (logs::string like '%shares of liquidity removed%' or logs::string like '%Liquidity added%')
+and receiver_id not in (select distinct token_contract from "NEAR"."CORE"."DIM_TOKEN_LABELS")
+  and a.block_timestamp >= (current_date - 90)
+),
+add_liquidity_combined as (
+select 
+distinct 
+block_timestamp,
+tx_hash,
+user_address,
+receiver_id as protocol,
+token0_amt as token_amount,
+trim(token0_name) ::string  as token_name
+from liquidity_total
+where method_name = 'add_liquidity'
+  union
+select 
+distinct 
+  block_timestamp,
+tx_hash,
+user_address,
+receiver_id as protocol,
+token1_amt as token_amount,
+trim(token1_name) ::string  as token_name
+from liquidity_total  
+where method_name = 'add_liquidity'
+),
+add_liquidity_final as (
+select 
+user_address,
+protocol,
+token_name as token_contract,
+count(distinct tx_hash) as n_deposits,
+sum(token_amount/pow(10,b.decimals)) as dep_token_volume,
+sum(token_amount/pow(10,b.decimals)*c.price_usd) as dep_usd_volume
+from add_liquidity_combined a
+left join "NEAR"."CORE"."DIM_TOKEN_LABELS" b
+on a.token_name = b.token_contract
+left join token_prices c
+on a.token_name = c.token_contract and TRUNC(a.block_timestamp,'hour') = c.timestamp_h
+group by 1,2,3
+),
+remove_liquidity_combined as (
+select 
+distinct 
+block_timestamp,
+tx_hash,
+user_address,
+receiver_id as protocol,
+token0_amt as token_amount,
+trim(token0_name) ::string  as token_name
+from liquidity_total
+where method_name = 'remove_liquidity'
+  union
+select 
+distinct 
+  block_timestamp,
+tx_hash,
+user_address,
+receiver_id as protocol,
+token1_amt as token_amount,
+trim(token1_name) ::string  as token_name
+from liquidity_total  
+where method_name = 'remove_liquidity'
+),
+remove_liquidity_final as (
+select 
+user_address,
+protocol,
+token_name as token_contract,
+count(distinct tx_hash) as n_withdrawals,
+sum(token_amount/pow(10,b.decimals)) as wdraw_token_volume,
+sum(token_amount/pow(10,b.decimals)*c.price_usd) as wdraw_usd_volume
+from remove_liquidity_combined a
+left join "NEAR"."CORE"."DIM_TOKEN_LABELS" b
+on a.token_name = b.token_contract
+left join token_prices c
+on a.token_name = c.token_contract and TRUNC(a.block_timestamp,'hour') = c.timestamp_h
+group by 1,2,3
+)
+select coalesce(a.user_address, b.user_address) as user_address,
+coalesce(a.protocol, b.protocol) as protocol,
+coalesce(a.token_contract, b.token_contract) as token_contract,
+a.n_deposits,
+b.n_withdrawals,
+a.dep_token_volume,
+a.dep_usd_volume,
+b.wdraw_token_volume,
+b.wdraw_usd_volume
+from add_liquidity_final a
+full join remove_liquidity_final b
+on a.user_address = b.user_address and a.protocol = b.protocol and a.token_contract = b.token_contract
