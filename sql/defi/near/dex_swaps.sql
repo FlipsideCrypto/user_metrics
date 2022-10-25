@@ -35,7 +35,7 @@ n_buys as (
   GROUP BY 1,2,3,4
 )
 SELECT 
-  coalesce(buy.trader,sell.trader) as trader,
+  coalesce(buy.trader,sell.trader) as user_address,
   coalesce(buy.protocol,sell.protocol) as protocol,
   coalesce(buy.token_contract,sell.token_contract) as token_contract,
   coalesce(buy.token_symbol,sell.token_symbol) as token_symbol,
