@@ -6,6 +6,15 @@ with token_prices as (
   	where timestamp >= (current_date - 90)
   	group by 1,2
 ),
+near_prices as (
+	select 
+      TRUNC(TIMESTAMP,'hour') as timestamp_h, 
+      avg(price_usd) as price_usd 
+  	from near.core.fact_prices
+  	where timestamp >= (current_date - 90)
+  	AND symbol = 'wNEAR'
+  	group by 1
+),
 nte_erc20_transactions as (
 select 
 a.block_timestamp,
@@ -83,9 +92,11 @@ distinct sender,
 token_id,
 symbol,
 sum(amount) as token_amount,
-NULL as usd_amt,
+sum(amount*price_usd) as usd_amt,
 count(distinct tx_hash) as n_transactions
-from nte_near_totals
+from nte_near_totals a 
+left join near_prices b
+  on TRUNC(a.block_timestamp,'hour') = b.timestamp_h
 group by 1,2,3
 ),
 bridged_to_eth as (
