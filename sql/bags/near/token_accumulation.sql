@@ -399,3 +399,4 @@ AND ai.token_symbol = ao.token_symbol
 AND ai.token_contract = ao.token_contract
 GROUP BY
 1,2,3
+
