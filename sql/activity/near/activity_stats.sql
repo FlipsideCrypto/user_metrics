@@ -1,5 +1,5 @@
 select A.tx_signer as user_address,
-count(distinct tx_hash) AS n_txn,
+count(distinct A.tx_hash) AS n_txn,
 COUNT(DISTINCT(A.block_timestamp::date)) AS n_days_active,
 MIN(DATEDIFF('days', A.block_timestamp, CURRENT_TIMESTAMP)) AS days_since_last_txn,
 
