@@ -37,10 +37,11 @@ distinct
 case when from_address = 'mint' then owner_id::string
 when from_address = 'tge-lockup.sweat' then to_address::string
 when TO_ADDRESS like '%deposits.grow.sweat%' then from_address::string
-end as owner_id,
+end as user_address,
 count(distinct tx_hash) as n_transactions,
 sum(case when from_address = 'mint' then sweat else 0 end) as sweat_minted,
 sum(case when from_address = 'tge-lockup.sweat' then sweat else 0 end) as sweat_unlocked_tge,
 sum(case when TO_ADDRESS like '%deposits.grow.sweat%' then sweat else 0 end) as sweat_staked
 FROM sweat_transfer
+where user_address not in ('token.sweat', 'treasury.sweat', 'ecosystem.sweat', 'sweatcoltd.sweat', 'publicsale.sweat', 'oracle.sweat', 'community.sweat')
 GROUP BY 1
