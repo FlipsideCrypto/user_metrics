@@ -40,11 +40,12 @@ SELECT
   JOIN daily_prices dp ON date_trunc('day', tt.block_timestamp) = dp.day
     AND tt.token_contract = dp.token_contract
   WHERE
-  block_timestamp > current_date - 90
+  block_timestamp > current_date - 180
   AND
   tx_succeeded = 'TRUE'
   AND 
   type = 'dep'
+  AND tx_id NOT IN (SELECT tx_id FROM flow.core.fact_bridge_transactions WHERE block_timestamp > current_date - 180)
   GROUP BY 
   user_address, symbol, tt.token_contract, project_name
   ),
@@ -64,11 +65,13 @@ SELECT
   JOIN daily_prices dp ON date_trunc('day', tt.block_timestamp) = dp.day
     AND tt.token_contract = dp.token_contract
   WHERE
-  block_timestamp > current_date - 90
+  block_timestamp > current_date - 180
   AND
   tx_succeeded = 'TRUE'
   AND 
   type = 'dep'
+  AND
+  tx_id NOT IN (SELECT tx_id FROM flow.core.fact_bridge_transactions WHERE block_timestamp > current_date - 180)
   GROUP BY 
   user_address, symbol, tt.token_contract, project_name
   )

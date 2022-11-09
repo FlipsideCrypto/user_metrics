@@ -8,7 +8,7 @@ WITH listings AS (
   AND 
   event_type = 'MomentListed'
   AND
-  block_timestamp >= current_date - 90
+  block_timestamp >= current_date - 180
   AND
   tx_succeeded = TRUE
   GROUP BY user_address
@@ -24,7 +24,7 @@ event_contract IN ('A.4eb8a10cb9f87357.NFTStorefront', 'A.4eb8a10cb9f87357.NFTSt
 AND 
 event_type = 'ListingAvailable'
 AND
-block_timestamp >= current_date - 90
+block_timestamp >= current_date - 180
 AND
 tx_succeeded = TRUE
 GROUP BY user_address
@@ -40,7 +40,7 @@ select
   AND 
   event_type = 'PieceListed'
   AND
-  block_timestamp >= current_date - 90
+  block_timestamp >= current_date - 180
   AND
   tx_succeeded = TRUE
   GROUP BY user_address

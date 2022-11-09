@@ -22,7 +22,7 @@ inbound AS (
   JOIN daily_prices dp ON date_trunc('day', bt.block_timestamp) = dp.day
     AND bt.token_contract = dp.token_contract
   WHERE
-  block_timestamp > current_date - 90
+  block_timestamp > current_date - 180
   AND 
   direction = 'inbound'
   GROUP BY 
@@ -41,7 +41,7 @@ outbound AS (
   JOIN daily_prices dp ON date_trunc('day', bt.block_timestamp) = dp.day
     AND bt.token_contract = dp.token_contract
   WHERE
-  block_timestamp > current_date - 90
+  block_timestamp > current_date - 180
   AND 
   direction = 'outbound'
   GROUP BY 
