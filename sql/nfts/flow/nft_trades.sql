@@ -5,7 +5,7 @@ SELECT
   date_trunc('day', timestamp) AS day,
   AVG(price_usd) AS price
 FROM flow.core.fact_prices
-  --WHERE token_contract = 'A.1654653399040a61.FlowToken'
+  --WHERE token_contract = 'A.16546533918040a61.FlowToken'
 WHERE timestamp > current_date - 91
 GROUP BY symbol, token_contract, day
 ),
@@ -29,10 +29,10 @@ sells AS (
   END  AS sell_usd_volume
   FROM
   flow.core.ez_nft_sales ns
-  JOIN daily_prices dp ON date_trunc('day', ns.block_timestamp) = dp.day
+  LEFT JOIN daily_prices dp ON date_trunc('day', ns.block_timestamp) = dp.day
       AND ns.currency = dp.token_contract
   WHERE
-  block_timestamp > current_date - 90
+  block_timestamp > current_date - 180
   GROUP BY 
   seller, marketplace, nf_token_contract, sell_symbol, currency
 ),
@@ -53,10 +53,10 @@ buys AS (
   END  AS buy_usd_volume
   FROM
   flow.core.ez_nft_sales ns
-  JOIN daily_prices dp ON date_trunc('day', ns.block_timestamp) = dp.day
+  LEFT JOIN daily_prices dp ON date_trunc('day', ns.block_timestamp) = dp.day
       AND ns.currency = dp.token_contract
   WHERE
-  block_timestamp > current_date - 90
+  block_timestamp > current_date - 180
   GROUP BY 
   buyer, marketplace, nf_token_contract, buy_symbol, currency
 )
@@ -81,4 +81,9 @@ FULL OUTER JOIN buys ON sells.user_address = buys.user_address
 AND sells.marketplace = buys.marketplace
 AND sells.nf_token_contract = buys.nf_token_contract
 AND sells.currency = buys.currency
+
+
+
+
+
 

@@ -15,14 +15,14 @@ user_txn AS (SELECT
              AND
              event_type = 'TokensDeposited'
              AND
-             block_timestamp > current_date - 90
+             block_timestamp > current_date - 180
 )
 SELECT
 fe.tx_id, event_data:amount AS token_value, event_contract, event_data:from::string AS user_address
 FROM "FLOW"."CORE"."FACT_EVENTS" fe
 JOIN user_txn ut ON fe.tx_id = ut.tx_id AND fe.event_data:from = ut.user_address
 WHERE 
-block_timestamp > current_date - 90
+block_timestamp > current_date - 180
 AND
 event_type = 'TokensWithdrawn'
 AND event_data:amount > 0

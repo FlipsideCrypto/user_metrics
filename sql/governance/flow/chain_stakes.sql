@@ -15,7 +15,7 @@ stakes AS (
   FROM FLOW.CORE.EZ_STAKING_ACTIONS sa
   JOIN daily_prices dp ON date_trunc('day', sa.block_timestamp) = dp.day
   WHERE 
-  block_timestamp >= current_date - 90
+  block_timestamp >= current_date - 180
   AND
   action = 'DelegatorTokensCommitted'
   GROUP BY user_address
@@ -30,7 +30,7 @@ unstakes AS (
   FROM FLOW.CORE.EZ_STAKING_ACTIONS sa
   JOIN daily_prices dp ON date_trunc('day', sa.block_timestamp) = dp.day
   WHERE 
-  block_timestamp >= current_date - 90
+  block_timestamp >= current_date - 180
   AND
   action = 'DelegatorUnstakedTokensWithdrawn'
   GROUP BY user_address
@@ -39,7 +39,7 @@ unstakes AS (
 SELECT
 coalesce(s.user_address, u.user_address) AS user_address,
 'flow' AS protocol,
-'A.1654653399040a61.FlowToken' AS token_contract,
+'A.16546533918040a61.FlowToken' AS token_contract,
 'FlowToken' AS token_symbol,
 COALESCE(n_stakes, 0) AS n_stakes,
 COALESCE(n_unstakes, 0) AS n_unstakes,

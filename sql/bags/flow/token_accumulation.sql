@@ -11,7 +11,7 @@ SELECT
   date_trunc('day', timestamp) AS day,
   AVG(price_usd) AS price
 FROM flow.core.fact_prices
-  --WHERE token_contract = 'A.1654653399040a61.FlowToken'
+  --WHERE token_contract = 'A.16546533918040a61.FlowToken'
 WHERE timestamp > current_date - 91
 GROUP BY symbol, token_contract, day
 ),
@@ -31,7 +31,7 @@ xfers_in AS (
   JOIN daily_prices dp ON date_trunc('day', tt.block_timestamp) = dp.day
       AND tt.token_contract = dp.token_contract
   WHERE 
-  block_timestamp >= current_date - 90
+  block_timestamp >= current_date - 180
   AND
   tx_succeeded = TRUE
   AND 
@@ -58,7 +58,7 @@ dex_buys AS (
   JOIN daily_prices dp ON date_trunc('day', ds.block_timestamp) = dp.day
       AND ds.token_in_contract = dp.token_contract
   WHERE
-  block_timestamp > current_date - 90
+  block_timestamp > current_date - 180
   GROUP BY 
   trader, symbol, token_in_contract
 ),
@@ -80,7 +80,7 @@ nft_sells AS (
   JOIN daily_prices dp ON date_trunc('day', ns.block_timestamp) = dp.day
       AND ns.currency = dp.token_contract
   WHERE
-  block_timestamp > current_date - 90
+  block_timestamp > current_date - 180
   GROUP BY 
   seller, token_symbola, currency
 ),
@@ -98,11 +98,11 @@ SELECT
   JOIN daily_prices dp ON date_trunc('day', bt.block_timestamp) = dp.day
     AND bt.token_contract = dp.token_contract
   WHERE
-  block_timestamp > current_date - 90
+  block_timestamp > current_date - 180
   AND 
   direction = 'inbound'
   AND
-  tx_id NOT IN (SELECT tx_id FROM flow.core.fact_bridge_transactions WHERE block_timestamp > current_date - 90)
+  tx_id NOT IN (SELECT tx_id FROM flow.core.fact_bridge_transactions WHERE block_timestamp > current_date - 180)
   GROUP BY 
   user_addressa, symbol, bt.token_contract
 ),
@@ -129,7 +129,7 @@ xfers_out AS (
   JOIN daily_prices dp ON date_trunc('day', tt.block_timestamp) = dp.day
       AND tt.token_contract = dp.token_contract
   WHERE 
-  block_timestamp >= current_date - 90
+  block_timestamp >= current_date - 180
   AND
   tx_succeeded = TRUE
   AND 
@@ -152,7 +152,7 @@ dex_sells AS (
   JOIN daily_prices dp ON date_trunc('day', ds.block_timestamp) = dp.day
       AND ds.token_out_contract = dp.token_contract
   WHERE
-  block_timestamp > current_date - 90
+  block_timestamp > current_date - 180
   GROUP BY 
   trader, symbol, token_out_contract
 ),
@@ -174,7 +174,7 @@ nft_buys AS (
   JOIN daily_prices dp ON date_trunc('day', ns.block_timestamp) = dp.day
       AND ns.currency = dp.token_contract
   WHERE
-  block_timestamp > current_date - 90
+  block_timestamp > current_date - 180
   GROUP BY 
   buyer, token_symbola, currency
 ),
@@ -192,11 +192,11 @@ SELECT
   JOIN daily_prices dp ON date_trunc('day', bt.block_timestamp) = dp.day
     AND bt.token_contract = dp.token_contract
   WHERE
-  block_timestamp > current_date - 90
+  block_timestamp > current_date - 180
   AND 
   direction = 'outbound'
   AND
-  tx_id NOT IN (SELECT tx_id FROM flow.core.fact_bridge_transactions WHERE block_timestamp > current_date - 90)
+  tx_id NOT IN (SELECT tx_id FROM flow.core.fact_bridge_transactions WHERE block_timestamp > current_date - 180)
   GROUP BY 
   user_addressa, symbol, bt.token_contract
 ),
