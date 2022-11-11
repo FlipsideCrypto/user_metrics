@@ -9,8 +9,6 @@ activity.stats <- QuerySnowflake(activity.stats.query)
 dex.swaps.query <- paste(readLines("sql/defi/flow/dex_swaps.sql"), collapse = "\n")
 dex.swaps <- QuerySnowflake(dex.swaps.query)
 
-
-
 lp.activity.query <- paste(readLines("sql/defi/flow/lp_activity.sql"), collapse = "\n")
 #lp.activity <- QuerySnowflake(lp.activity.query)
 
@@ -49,129 +47,51 @@ token.accumulation <- token.accumulation[token_in_volume > 0.001 | token_out_vol
 flow.labels <- QuerySnowflake("SELECT * FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS where blockchain = 'flow'")
 flow.contracts <- QuerySnowflake("SELECT * FROM flow.core.dim_contract_labels")
 
-# coolness <- nft.trades[, list(user_profit_usd = sum(profit_usd), n_trades = sum(n_trades)), by = "user_address,nf_token_contract"] %>% 
-#   .[, list(n_users = uniqueN(user_address), prop_profitiable = mean(user_profit_usd > 0), n_trades = sum(n_trades)/2), by = nf_token_contract] %>%
-#   .[order(-prop_profitiable)]
+nft.profits <- nft.trades[, list(user_profit_usd = sum(profit_usd), n_trades = sum(n_trades)), by = "user_address,nf_token_contract"] %>%
+  .[, list(n_users = uniqueN(user_address), prop_profitiable = mean(user_profit_usd > 0), n_trades = sum(n_trades)/2), by = nf_token_contract] %>%
+  .[order(-prop_profitiable)]
+
+coolness[1:10]
+ggplot(coolness,
+       aes(x = n_users, y = n_trades, size = prop_profitiable)) +
+  geom_point()
+
+
+
+
+
+
+
+# # increment fi
+# flow.contracts <- QuerySnowflake("SELECT * FROM flow.core.dim_contract_labels")
+# flow.contracts[str_detect(tolower(contract_name), "fi")]
 # 
-# coolness[1:10]
-# ggplot(coolness,
-#        aes(x = n_users, y = n_trades, size = prop_profitiable)) +
-#   geom_point()
-
-
-
-
-
-# calculate the metric
-
-# NFTs
-# count nft trades
-flowscored.metrics <- nft.trades[, list(metric_name = "nft_n_trades", metric = n_trades), by = list(user_address)]
-
-# total purchase $
-flowscored.metrics <- rbind(flowscored.metrics,
-                            nft.trades[, list(metric_name = "nft_usd_buy_volume", metric = sum(buy_usd_volume)), by = list(user_address)] )
-
-# net nft profit
-flowscored.metrics <- rbind(flowscored.metrics,
-                            nft.trades[, list(metric_name = "nft_usd_profit", metric = sum(profit_usd)), by = list(user_address)])
-
-# different nft projects traded
-flowscored.metrics <- rbind(flowscored.metrics,
-                            nft.trades[, list(metric_name = "nft_n_projects", metric = uniqueN(nft_project)), by = list(user_address)])
-
-# non_ts_ad_trades
-flowscored.metrics <- rbind(flowscored.metrics,
-                            nft.trades[nft_project %notin% c("A.0b2a3299cc857e29.TopShot", "A.e4cf4bdc1751c65d.AllDay"), 
-                                       list(metric_name = "nft_small_project_trades", metric = uniqueN(nft_project)), by = list(user_address)])
-
-# gov_n_chain_stakes
-flowscored.metrics <- rbind(flowscored.metrics,
-                            chain.stakes[, list(metric_name = "gov_n_chain_stakes", metric = sum(n_stakes)), by = user_address])
-
-# gov_chain_stake_usd
-flowscored.metrics <- rbind(flowscored.metrics,
-                            chain.stakes[, list(metric_name = "gov_chain_stake_usd", metric = sum(stake_usd_volume)), by = user_address])
-
-# bags_net_cex_usd
-flowscored.metrics <- rbind(flowscored.metrics,
-                            cex.activity[, list(metric_name = "bags_net_cex_usd", 
-                                                metric = sum(wdraw_usd_volume) - sum(dep_usd_volume)), by = user_address])
-# bags_net_bridge_usd
-flowscored.metrics <- rbind(flowscored.metrics,
-                            bridge.activity[, list(metric_name = "bags_net_bridge_usd", 
-                                                   metric = sum(dep_usd_volume) - sum(wdraw_usd_volume)), by = user_address])
-# bags_net_token_usd
-flowscored.metrics <- rbind(flowscored.metrics,
-                            token.accumulation[, list(metric_name = "bags_net_token_usd", metric = sum(usd_in_volume) - sum(usd_out_volume)), by = user_address])
-
-
-# defi_n_swaps
-flowscored.metrics <- rbind(flowscored.metrics,
-                            dex.swaps[, list(metric_name = "defi_n_swaps", metric = sum(n_buys) + sum(n_sells)), by = user_address])
-
-# defi_n_tokens_swapped
-flowscored.metrics <- rbind(flowscored.metrics,
-                            dex.swaps[, list(metric_name = "defi_n_tokens_swapped", metric = uniqueN(token_contract)), by = user_address])
-
-# activity_n_txn
-flowscored.metrics <- rbind(flowscored.metrics,
-                            activity.stats[, list(user_address, metric_name = "activity_n_txn", metric = n_txn)])
-
-# activity_days_active
-flowscored.metrics <- rbind(flowscored.metrics,
-                            activity.stats[, list(user_address, metric_name = "activity_days_active", metric = n_days_active)])
-
-
-
-metric.bin.values <- list()
-metric.binned.data <- list()
-# loop through each metric, set up the selected values, etc.
-# put them into metrics master list and save the launch values
-
-
-# increment fi
-flow.contracts <- QuerySnowflake("SELECT * FROM flow.core.dim_contract_labels")
-flow.contracts[str_detect(tolower(contract_name), "fi")]
-
-"SwapFactory"
-flow.contracts[account_address == "0xb063c16cac85dbd1"]
-flow.contracts[account_address == "0xecbda466e7f191c7"]
-
-"SwapRouter"
-flow.contracts[account_address == "0xa6850776a94e6551"]
-"SwapPair (Template contract)"
-"SwapInterfaces, SwapConfig, SwapError"
-flow.contracts[account_address == "0xb78ef7afa52ff906"]
-
-# a thing?
-# A.39e42c67cc851cfb.EmeraldIdentityDapper       EmeraldIDCreated    6769
-
-# my increment finance swap:
-"eb2c1c7d496807d53bba076cc1c3afe16552b9e757d3a41323598b33fd2ddf96"
-
-all.contracts.events[str_detect(tolower(event_type), "dep")]
-
-all.contracts.events[str_detect(tolower(event_contract), "dapp")]
-
-dex.swaps[, .N, by = "token_contract"]
-
-all.contracts.events.swaps <- QuerySnowflake("select event_contract, event_type, count(tx_id) as n_txn from FLOW.CORE.FACT_EVENTS
-where block_timestamp > current_date - 90
-AND event_type = 'Swap'
-group by event_contract, event_type")
-
-
-all.contracts.events[event_contract == "A.396c0cda3302d8c5.SwapPair"]
-
-all.contracts.events[event_type == "Swap", list(event_contract, event_type, n_txn, in_dex_swaps = ifelse(event_contract %in% dex.swaps$protocol, "y", "n"))]
-
-dex.swaps[protocol == "A.09c49abce2a7385c.SwapPair"]
-
-
-all.contracts.events[str_detect(tolower(event_type), "swap")][order(event_contract, event_type)]
-
-flow.contracts[event_contract == "A.396c0cda3302d8c5.SwapPair"]
+# "SwapFactory"
+# flow.contracts[account_address == "0xb063c16cac85dbd1"]
+# flow.contracts[account_address == "0xecbda466e7f191c7"]
+# 
+# "SwapRouter"
+# flow.contracts[account_address == "0xa6850776a94e6551"]
+# "SwapPair (Template contract)"
+# "SwapInterfaces, SwapConfig, SwapError"
+# flow.contracts[account_address == "0xb78ef7afa52ff906"]
+# 
+# # a thing?
+# # A.39e42c67cc851cfb.EmeraldIdentityDapper       EmeraldIDCreated    6769
+# 
+# # my increment finance swap:
+# "eb2c1c7d496807d53bba076cc1c3afe16552b9e757d3a41323598b33fd2ddf96"
+# 
+# all.contracts.events[str_detect(tolower(event_type), "dep")]
+# 
+# all.contracts.events[str_detect(tolower(event_contract), "dapp")]
+# 
+# dex.swaps[, .N, by = "token_contract"]
+# 
+# all.contracts.events.swaps <- QuerySnowflake("select event_contract, event_type, count(tx_id) as n_txn from FLOW.CORE.FACT_EVENTS
+# where block_timestamp > current_date - 90
+# AND event_type = 'Swap'
+# group by event_contract, event_type")
 
 
 # basic stats:
@@ -191,20 +111,14 @@ flowscored.metrics <- rbind(flowscored.metrics,
 flowscored.metrics.w <- dcast.data.table(flowscored.metrics,
                                         user_address ~ metric_name, value.var = "metric", fun.aggregate = sum, fill = 0)
 
-flowscored.metrics.w <- flowscored.metrics.w[nft_n_trades > 0 | nft_n_listings > 0]
 
-# awards earned
-# list an nft on flowty
-flowscored.metrics.w[, flowty_list := ifelse(user_address %in% nft.lending[n_listings > 0]$user_address, 1, 0)]
+# noteable actions
+flowscored.metrics.w[, list_nft := ifelse(user_address %in% nft.listings$user_address, 1, 0)]
+flowscored.metrics.w[, bought_nfts := ifelse(user_address %in% nft.trades[n_buys > 0]$user_address, 1, 0)]
 
-# buy a flowvatar
-flowscored.metrics.w[, own_flovatar := round(runif(nrow(flowscored.metris.w)))]
+flowscored.metrics.w[, staked_flow := ifelse(user_address %in% chain.stakes[n_stakes > 0]$user_address, 1, 0)]
+flowscored.metrics.w[, dex_swapper := ifelse(user_address %in% dex.swaps$user_address, 1, 0)]
 
-# hodl only
-flowscored.metrics.w[, hodl_only := round(runif(nrow(flowscored.metris.w)))]
-
-# use a dex
-flowscored.metrics.w[, dex_swapper := round(runif(nrow(flowscored.metris.w)))]
 
 # # top x% y trader
 flowscored.metrics.w[, top_topshot_trader := round(runif(nrow(flowscored.metris.w)))]
@@ -214,7 +128,7 @@ flowscored.metrics.w[, positive_trader := round(runif(nrow(flowscored.metris.w))
 
 
 save(flowscored.metrics.w, file = "~/user_metrics/apps/flow/flowscored/data.RData")
-
+setwd("~/user_metrics/apps/flow/flowscored/")
 
 
 if(FALSE) {
