@@ -4,6 +4,8 @@ select
 (raw_new_balance - raw_previous_balance) / pow(10, 18) AS net_delegation
 FROM optimism.core.fact_delegations
 where delegation_type != 'Re-Delegation'
+AND
+block_timestamp > current_date - 180
 )
 SELECT
 delegator AS user_address,

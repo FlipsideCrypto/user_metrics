@@ -12,7 +12,7 @@ WITH sells AS (
   FROM
   optimism.core.ez_nft_sales ns
   WHERE
-  block_timestamp > current_date - 90
+  block_timestamp > current_date - 180
   AND
   user_address NOT IN (SELECT address FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS where blockchain = 'optimism')
   GROUP BY 
@@ -32,7 +32,7 @@ buys AS (
   FROM
   optimism.core.ez_nft_sales ns
   WHERE
-  block_timestamp > current_date - 90
+  block_timestamp > current_date - 180
   AND
   user_address NOT IN (SELECT address FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS where blockchain = 'optimism')
   GROUP BY 

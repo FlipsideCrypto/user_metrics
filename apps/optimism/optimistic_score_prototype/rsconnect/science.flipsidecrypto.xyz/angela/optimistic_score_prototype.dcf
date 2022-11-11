@@ -1,0 +1,14 @@
+name: optimistic_score_prototype
+title: optimistic_score_prototype
+username: angela
+account: angela
+server: science.flipsidecrypto.xyz
+hostUrl: https://science.flipsidecrypto.xyz/__api__
+appId: 205
+bundleId: 645
+url: https://science.flipsidecrypto.xyz/content/b2da29fb-9ed6-4732-b4cd-0b7c1781a0be/
+when: 1668185709.31328
+lastSyncTime: 1668185709.31329
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: update_data.R
