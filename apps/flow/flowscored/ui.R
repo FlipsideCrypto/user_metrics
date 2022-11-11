@@ -10,10 +10,18 @@ fluidPage(
     class = "wrapper",
     fluidRow(
       column(4, img(src = "flow_logo.png", width = "100px")),
-      column(7, textInput("addy", label = "Enter Your Address", value = "0x9244cd25314edd34"))
+      column(8, "Welcome 2 Flow-sanity")
+      ),
+    fluidRow(column(12, "Connect your wallets to see if you're a Flow Hero or a Flow Zero.")),
+    
+    fluidRow(
+      column(2, ""),
+      column(4, actionButton(inputId = "dapperconnect", img(src = "dapper.png", height = "75px"))),
+      column(4, actionButton(inputId = "bloctoconnect", img(src = "blocto.png", height = "75px"))),
+      column(2, "")
     ),
     
-    fluidRow("Basic Stats"),
+    fluidRow("180-Day Stats & Rankings"),
     
     fluidRow(
       column(6, ""),
@@ -22,16 +30,16 @@ fluidPage(
     ),
     fluidRow(
       column(6, "# Trades"),
-      column(3, textOutput("nft_n_trades")),
+      column(3, textOutput(outputId = "nft_n_trades")),
       column(3, textOutput("nft_n_trades_p"))
     ),
     fluidRow(
-      column(6, "# days_since_last_tx"),
+      column(6, "# Days Since Last Txn"),
       column(3, textOutput("days_since_last_tx")),
       column(3, textOutput("days_since_last_tx_p"))
     ),
     fluidRow(
-      column(6, "# Listings"),
+      column(6, "# NFT Listings"),
       column(3, textOutput("nft_n_listings")),
       column(3, textOutput("nft_n_listings_p"))
     ),
@@ -43,29 +51,30 @@ fluidPage(
     
     br(),hr(),br(),
     
-    fluidRow("Awards!"),
+    fluidRow("Notable 180 Day Actions"),
     
     fluidRow(
       column(6, 
-             textOutput("award_flowty_list"), "List an NFT on Flowty"),
+             div(class = 'actions', textOutput("action_listed_nft"), "Listed an NFT on Flowty")),
       column(6, 
-             textOutput("award_positive_trader"), "Positive Trader")
+             div(class = 'actions', textOutput("action_bought_nfts"), "Bought >3 NFTs"))
     ),
     
     fluidRow(
       column(6, 
-             textOutput("award_own_flovatar"), "Own a Flovatar"),
+             textOutput("action_staked_flow"), "Staked Flow"),
       column(6, 
-             textOutput("award_dex_swapper"), "Dex Swapper")
+             textOutput("action_dex_swap"), "Swapped on a Dex")
     ),
     
     br(),hr(),br(),
     
-    fluidRow("On Chain Personas"),
+    fluidRow("Achievements"),
     
     fluidRow(
       column(6, 
              "🏀 Topshot Trader"),
+      "Profitable NFT Trader",
       column(6, 
              "📈 Defiaholic")
     ),
@@ -82,4 +91,5 @@ fluidPage(
     
   ) # close wrapper
   
-)
+) # close fluid page
+
