@@ -11,7 +11,7 @@ JOIN optimism.core.FACT_HOURLY_TOKEN_PRICES pp
 ON date_trunc('hour', tt.block_timestamp) = pp.hour
 AND tt.contract_address = pp.token_address
 WHERE
-block_timestamp > current_date - 90
+block_timestamp > current_date - 180
 AND
 from_address IN
 (SELECT address 
@@ -38,7 +38,7 @@ JOIN optimism.core.FACT_HOURLY_TOKEN_PRICES pp
 ON date_trunc('hour', tt.block_timestamp) = pp.hour
 AND tt.contract_address = pp.token_address
 WHERE
-block_timestamp > current_date - 90
+block_timestamp > current_date - 180
 AND
 to_address IN
 (SELECT address 

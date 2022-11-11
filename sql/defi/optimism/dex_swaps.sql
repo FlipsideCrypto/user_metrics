@@ -8,7 +8,7 @@ FROM
 OPTIMISM.CORE.FACT_EVENT_LOGS
 
 WHERE
-block_timestamp > current_date - 90
+block_timestamp > current_date - 180
 AND
 lower(event_name) = 'swap'
 AND

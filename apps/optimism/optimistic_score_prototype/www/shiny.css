@@ -1,0 +1,53 @@
+body {
+background: white;
+background: linear-gradient(90deg, rgba(255,196,202,0.19511554621848737) 0%, rgba(255,255,255,0) 100%);  color: #919EAB;
+  font-family: 'Inter';
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.container-fluid {
+  background-color: transparent;
+  max-width: 700px;
+  margin: 0 auto;
+  height: 100%;
+  padding-top: 5%;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.wrapper {
+  border-radius: 16px;
+  border: 1px solid #FF0420;
+  background-color: white;
+  margin-top: -5%;
+  padding-top: 25px;
+  padding-bottom: 3%;
+  padding-right: 5%;
+  padding-left: 5%;
+  margin-bottom: 30px;
+}
+
+.walletpart {
+  padding-top: 2%;
+  padding-bottom: 2%;
+
+}
+
+.scorebox {
+  display: flex;
+    border: 1px solid black;
+  border-radius: 5px;
+  padding: 10px;
+  margin-left: 10%;
+  margin-right: 10%;
+  margin-bottom: 20px;
+}
+
+.shiny-image-output {
+  height: 30px !important;
+  width: 30px !important;
+  margin-right: 10px;
+}
+
+

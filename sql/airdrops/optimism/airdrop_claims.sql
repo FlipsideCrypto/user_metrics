@@ -16,4 +16,4 @@ SELECT
    WHERE blockchain = 'optimism')
   GROUP BY user_address
   
-  
+
