@@ -107,6 +107,6 @@ contract FlipsideAttestation {
             )
         );
 
-        require(messageHash.toEthSignedHash().recover(_signature) == signer, "FlipsideAttestation: Invalid signature");
+        require(messageHash.toEthSignedMessageHash().recover(_signature) == signer, "FlipsideAttestation: Invalid signature");
     }
 }

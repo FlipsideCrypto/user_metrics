@@ -1,0 +1,5 @@
+[
+  "event AttestationCreated(address indexed,address indexed,bytes32 indexed,bytes)",
+  "function attest(tuple(address,bytes32,bytes)[])",
+  "function attestations(address,address,bytes32) view returns (bytes)"
+]

@@ -7,13 +7,10 @@ require("hardhat-api-builder");
 require("hardhat-docgen");
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan");
-require('solidity-coverage');
 require("dotenv").config();
 
 task("deploy", "Deploys the protocol")
   .addFlag("verify", "Verify the deployed contracts on Etherscan")
-  .addParam("signerAddress", "The address of the account that will sign the attestations")
-  .addParam("attestationImplementation", "The address of the attestation implementation contract")
   .setAction(async (taskArgs, hre) => {
       // Compiling all of the contracts again just in case
       await hre.run('compile');
@@ -23,21 +20,14 @@ task("deploy", "Deploys the protocol")
 
       const chainId = await getChainId()
 
-      let attestationImplementation = taskArgs.attestationImplementation;
-      // Deploy a mock attestation implementation if none is provided
-      if (attestationImplementation === undefined) {
-        const AttestationStation = await hre.ethers.getContractFactory("Attestation");
-        opAtt = await AttestationStation.deploy();
-        opAtt = await AttStat.deployed();
-        attestationImplementation = attestationImplementationContractDeployed.address;
-        console.log("✅ Mock Attestation Station Deployed.");
-      }
+      const signer = deployer.address;
+      const OPAttestation = "0x7787194CCA11131C0159c0AcFf7E127CF0B676ed"
 
       // Deploying the FlipsideAttestation router
       const FlipsideAttestation = await ethers.getContractFactory("FlipsideAttestation");
       flipAtt = await FlipsideAttestation.deploy(
-        taskArgs.signerAddress,
-        attestationImplementation,
+        signer,
+        OPAttestation,
       );
       flipAtt = await flipAtt.deployed();
       console.log("✅ Flipside Attestation Deployed.");
@@ -45,21 +35,22 @@ task("deploy", "Deploys the protocol")
       flipAttDeployment = {
           "Chain ID": chainId,
           "Deployer": deployer.address,
+          "Signer": signer,
           "Flipside Attestation Address": flipAtt.address,
           "Remaining ETH Balance": parseInt((await deployer.getBalance()).toString()) / 1000000000000000000,
       }
       console.table(flipAttDeployment)
 
       // Verifying
-      if (taskArgs.verify !== false && chainId != '31337') {
+      if (taskArgs.verify === true && chainId != '31337') {
 
           // Give time for etherscan to confirm the contract before verifying.
           await new Promise(r => setTimeout(r, 30000));
           await hre.run("verify:verify", {
               address: flipAtt.address,
               constructorArguments: [
-                taskArgs.signerAddress, 
-                attestationImplementation
+                signer,
+                OPAttestation
               ],
           });
           console.log("✅ Flipside Attestation Verified.")
@@ -128,5 +119,9 @@ module.exports = {
           accounts: [`0x${process.env.PRIVATE_KEY}`],
           gasPrice: 5000000000, // 5 gwei
       },
+      optimism_goerli: {
+            url: `https://opt-goerli.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+            accounts: [`0x${process.env.PRIVATE_KEY}`],
+      }
   }
 };
