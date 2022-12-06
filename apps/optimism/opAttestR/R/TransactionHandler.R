@@ -10,11 +10,14 @@
 TransactionHandler <- function(
     inputId, 
     label, 
+    chainId,
     contract_address, 
     contract_abi, 
-    contract_method, 
+    contract_method,
+    provider,
+    signerPrivateKey,
     args, 
-    enabled, 
+    enabled,
     default = ""
 ) {
   reactR::createReactShinyInput(
@@ -30,9 +33,12 @@ TransactionHandler <- function(
     default,
     configuration = list(
         label = label,
+        chainId = chainId,
         contract_address = contract_address,
         contract_abi = contract_abi,
         contract_method = contract_method,
+        provider = provider,
+        signerPrivateKey = signerPrivateKey,
         args = args,
         enabled = enabled
     ),

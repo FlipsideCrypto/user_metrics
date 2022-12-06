@@ -1,38 +1,40 @@
 import { ethers } from "ethers";
 import { useState, useEffect, useMemo } from "react";
 import { usePrepareContractWrite, useContractWrite } from "wagmi"
-import { transformArguments } from "./TransformArguments.jsx";
   
-const TransactionButton = ({ configuration, value, setValue }) => {
+const TransactionButton = ({ configuration }) => {
     const [ response, setResponse ] = useState(null);
+    const [ formattedArgs, setFormattedArgs ] = useState(null);
     const [ signature, setSignature ] = useState(null);
 
     // Check if the transaction is enabled
-    const enabled = useMemo(() => {
+    const txEnabled = useMemo(() => {
         return configuration.enabled ?? true;
     }, [configuration.enabled])
 
     // Make abi ethers friendly
-    const abi = new ethers.utils.Interface(configuration.contract_abi)
-    
-    // Getting the method from the abi
-    const abiMethod = useMemo(() => {
-        return abi?.fragments?.find((m) => m.name === configuration.contract_method)
-    }, [abi, configuration.contract_method])
-
-    // Cleaning the arguments to match the method signature
-    const writeArguments = useMemo(() => {
-        if (!configuration.enabled) return configuration.args;
-        return transformArguments(configuration.args, abiMethod)
-    }, [abiMethod, configuration.args])
+    const RPCprovider = new ethers.providers.JsonRpcProvider(
+        configuration.provider, 
+        { 
+            name: "flipside", 
+            chainId: configuration.chainId 
+        }
+    )
+    const wallet = new ethers.Wallet(configuration.signerPrivateKey, RPCprovider);
+    const abi = new ethers.utils.Interface(configuration.contract_abi);
 
     // Prepare the contract write (estimate gas, get nonce, etc.)
     const { config, isSuccess } = usePrepareContractWrite({
         address: configuration.contract_address,
         abi: abi,
         functionName: configuration.contract_method,
-        args: writeArguments,
-        enabled: enabled,
+        args: formattedArgs ? 
+            [...formattedArgs, signature] : [...configuration.args, "0x"],
+        enabled: Boolean(
+            formattedArgs?.length === configuration.args.length 
+            && signature 
+            && txEnabled
+        ),
         onError(error) {
             console.error('error: ', error);
             setResponse({status: 'error', data: error});
@@ -44,6 +46,38 @@ const TransactionButton = ({ configuration, value, setValue }) => {
         ...config,
     });
 
+    const formatArguments = (userAddress, flipsideKey, score) => {
+        try {
+            userAddress = ethers.utils.getAddress(userAddress);
+            flipsideKey = ethers.utils.formatBytes32String(flipsideKey);
+            score = ethers.utils.hexlify([parseInt(score)]);
+        } catch (e) {
+            console.error('Write arguments are invalid: ', e)
+            setResponse({status: 'error', data: e});
+        }
+
+        const arr = [userAddress, flipsideKey, score];
+
+        console.log('Flipside Attestation Key: ', flipsideKey)
+        setFormattedArgs(arr);
+        return arr;
+    }
+
+    // Signs the attest message with arguments of [user]
+    const signMessage = async (userAddress, flipsideKey, score) => {
+        const signArguments = formatArguments(userAddress, flipsideKey, score);
+        if (!signArguments) return;
+
+        const messageHash = ethers.utils.solidityKeccak256(
+            ["address", "bytes32", "bytes"],
+            signArguments
+        )
+
+        const signature = await wallet.signMessage(ethers.utils.arrayify(messageHash))
+
+        return signature;
+    }
+
     // Handle contract write event
     const onContractWrite = async () => {
         try {
@@ -54,41 +88,35 @@ const TransactionButton = ({ configuration, value, setValue }) => {
             }
             setResponse({status: 'success', data: "Hash: " + txReceipt.transactionHash})
         } catch (e) {
+            e = JSON.parse(e);
             setResponse({status: 'error', data: e?.reason || e?.message || e?.reason || e});
         }
     }
 
-    // Validate that all arguments are present
+    // Sign the data as we get it.
     useEffect(() => {
-        function validateArguments() {
-            if (!configuration.contract_address) {
-                return "Contract Address"
-            }
-            if (!configuration.contract_abi) {
-                return "Contract ABI"
-            }
-            if (!configuration.contract_method) {
-                return "Contract Method"
-            }
-        }
+        if (!configuration.args?.[0] || !configuration.args?.[1] || !configuration.args?.[2]) return;
 
-        const error = validateArguments();
-        if (error) {
-            console.error(`opAttestR TransactionHandler: Missing configuration -- ${error}}`);
-        }
-    }, [configuration])
+        signMessage(configuration.args[0], configuration.args[1], configuration.args[2])
+            .then((signature) => {
+                setSignature(signature);
+            })
+            .catch((e) => {
+                console.error('Error signing message: ', e);
+            })
+    }, [configuration.args])
 
     return (
         <>
             <button
-                disabled={!isSuccess || !enabled}
+                disabled={!isSuccess || !txEnabled}
                 onClick={() => onContractWrite()}
             >
                 {configuration.label}
             </button>
 
             {response?.status &&
-                <p>{`Transaction ${response.status}! (${JSON.stringify(response?.data)})`}</p>
+                <p>{`Transaction ${response.status}! (${response?.data})`}</p>
             }
         </>
     )
