@@ -97,7 +97,7 @@ function(input, output, session) {
     } else if(nrow(thisAddyData()) == 0) {
       
       
-      "Your a Zero Star Optimist :-( Maybe buy an nft? or delegate some OP?"
+      "You don't qualify for an Optimist Score. Maybe buy an nft? or delegate some OP?"
       
     } else {
       

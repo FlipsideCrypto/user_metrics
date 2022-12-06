@@ -4,4 +4,5 @@ library(data.table)
 
 load("data.RData")
 
-
+#library(devtools)
+#install_github("flipsidecrypto/tools/metamaskConnectr")

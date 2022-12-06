@@ -1,5 +1,7 @@
 library(shroomDK)
+
 #source("~/data_science/util/util_functions.R")
+# need to replace query snowflake with shrrom dk's
 
 
 airdrop.claims <- QuerySnowflake(paste(readLines("~/user_metrics/sql/airdrops/optimism/airdrop_claims.sql"), collapse = "\n"))
@@ -8,20 +10,20 @@ chain.stakes <- QuerySnowflake(paste(readLines("~/user_metrics/sql/governance/op
 nft.trades <- QuerySnowflake(paste(readLines("~/user_metrics/sql/nfts/optimism/nft_trades.sql"), collapse = "\n"))
 dex.swaps <- QuerySnowflake(paste(readLines("~/user_metrics/sql/defi/optimism/dex_swaps.sql"), collapse = "\n"))
 
-dex.swaps <- auto_paginate_query(query = paste(readLines("~/user_metrics/sql/airdrops/optimism/airdrop_claims.sql"), collapse = "\n"), 
-                                 api_key = readLines("api_key.txt"))
-
-dex.swaps <- auto_paginate_query(query = paste(readLines("~/user_metrics/sql/airdrops/optimism/airdrop_claims.sql"), collapse = "\n"), 
-                                 api_key = readLines("api_key.txt"))
-
-dex.swaps <- auto_paginate_query(query = paste(readLines("~/user_metrics/sql/airdrops/optimism/airdrop_claims.sql"), collapse = "\n"), 
-                                 api_key = readLines("api_key.txt"))
-
-dex.swaps <- auto_paginate_query(query = paste(readLines("~/user_metrics/sql/airdrops/optimism/airdrop_claims.sql"), collapse = "\n"), 
-                                 api_key = readLines("api_key.txt"))
-
-dex.swaps <- data.table(auto_paginate_query(query = paste(readLines("~/user_metrics/sql/airdrops/optimism/airdrop_claims.sql"), collapse = "\n"), 
-                                 api_key = readLines("api_key.txt")))
+# dex.swaps <- auto_paginate_query(query = paste(readLines("~/user_metrics/sql/airdrops/optimism/airdrop_claims.sql"), collapse = "\n"), 
+#                                  api_key = readLines("api_key.txt"))
+# 
+# dex.swaps <- auto_paginate_query(query = paste(readLines("~/user_metrics/sql/airdrops/optimism/airdrop_claims.sql"), collapse = "\n"), 
+#                                  api_key = readLines("api_key.txt"))
+# 
+# dex.swaps <- auto_paginate_query(query = paste(readLines("~/user_metrics/sql/airdrops/optimism/airdrop_claims.sql"), collapse = "\n"), 
+#                                  api_key = readLines("api_key.txt"))
+# 
+# dex.swaps <- auto_paginate_query(query = paste(readLines("~/user_metrics/sql/airdrops/optimism/airdrop_claims.sql"), collapse = "\n"), 
+#                                  api_key = readLines("api_key.txt"))
+# 
+# dex.swaps <- data.table(auto_paginate_query(query = paste(readLines("~/user_metrics/sql/airdrops/optimism/airdrop_claims.sql"), collapse = "\n"), 
+#                                  api_key = readLines("api_key.txt")))
 
 op.metrics.w <- MergeDataFrames(
   list(airdrop.claims[, list(user_address, airdrop_tokens_claimed = token_volume)],
@@ -31,6 +33,9 @@ op.metrics.w <- MergeDataFrames(
        dex.swaps),
   by = "user_address", all = TRUE
 )
+
+
+
 
 ReplaceValues(op.metrics.w)
 
@@ -47,12 +52,5 @@ op.metrics.w <- op.metrics.w[total_score > 0]
 
 save(op.metrics.w, file = "data.RData")
 
-
-
-op.metrics.w[user_address == tolower("0xb5D903a991cA161B35543b158bf75413B0e54f31")]
-
-
-
-
-
+#op.metrics.w[user_address == tolower("0xf76e2d2bba0292cf88f71934aff52ea54baa64d9")]
 
