@@ -1,8 +1,0 @@
-[
-  "constructor(address,address)",
-  "function attest(address,bytes32,bytes,bytes)",
-  "function attestationStation() view returns (address)",
-  "function setAttestationStation(address)",
-  "function setSigner(address)",
-  "function signer() view returns (address)"
-]
