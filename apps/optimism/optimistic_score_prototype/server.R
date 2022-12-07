@@ -1,17 +1,17 @@
 function(input, output, session) {
   
   # read the connected address from the metamask connect funciton
-  output$connectedaddress <- renderText(paste0("connected as: ", input$ethaddress))
+  output$connectedaddress <- renderText(paste0("connected as: ", input$eth_address))
   
   # isolate the data for that address so we can use it over and over
-  thisAddyData <- reactive(op.metrics.w[user_address == tolower(input$ethaddress)])
-  #thisAddyData <- function() op.metrics.w[user_address == tolower(input$ethaddress)]
+  thisAddyData <- reactive(op.metrics.w[user_address == tolower(input$eth_address)])
+  #thisAddyData <- function() op.metrics.w[user_address == tolower(input$eth_address)]
   
   # get the airdrop score and output an empty or full star depending on achievement 
   # for the connected address
   output$airdropscore <- renderImage({
     # no address available:
-    if(substr(input$ethaddress, 1, 2) != "0x") {
+    if(substr(input$eth_address, 1, 2) != "0x") {
       return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
       # does not score or no data available
     } else if (nrow(thisAddyData()) == 0) {
@@ -27,7 +27,7 @@ function(input, output, session) {
   # repeat ^ for the other 4 scores:
   output$nftscore <- renderImage({
     # no address available:
-    if(substr(input$ethaddress, 1, 2) != "0x") {
+    if(substr(input$eth_address, 1, 2) != "0x") {
       return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
       # does not score or no data available
     } else if (nrow(thisAddyData()) == 0) {
@@ -42,7 +42,7 @@ function(input, output, session) {
   
   output$delegatescore <- renderImage({
     # no address available:
-    if(substr(input$ethaddress, 1, 2) != "0x") {
+    if(substr(input$eth_address, 1, 2) != "0x") {
       return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
       # does not score or no data available
     } else if (nrow(thisAddyData()) == 0) {
@@ -57,7 +57,7 @@ function(input, output, session) {
   
   output$cexscore <- renderImage({
     # no address available:
-    if(substr(input$ethaddress, 1, 2) != "0x") {
+    if(substr(input$eth_address, 1, 2) != "0x") {
       return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
       # does not score or no data available
     } else if (nrow(thisAddyData()) == 0) {
@@ -72,7 +72,7 @@ function(input, output, session) {
   
   output$dexscore <- renderImage({
     # no address available:
-    if(substr(input$ethaddress, 1, 2) != "0x") {
+    if(substr(input$eth_address, 1, 2) != "0x") {
       return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
       # does not score or no data available
     } else if (nrow(thisAddyData()) == 0) {
@@ -90,7 +90,7 @@ function(input, output, session) {
   output$totalscore <- renderText({
     
     
-    if(substr(input$ethaddress, 1, 2) != "0x") {
+    if(substr(input$eth_address, 1, 2) != "0x") {
       
       "Connect to get your Optimist Score"
       
@@ -106,6 +106,29 @@ function(input, output, session) {
     }
     
   })
+  
+  observeEvent(input$eth_address, {
+    print(input$eth_address)
+  })
+  
+  print(signerPrivateKey)
+  print(provider)
+  
+  output$tx_handler <- renderUI({
+    TransactionHandler(
+      "tx_button", 
+      chainId = 420,
+      label = "Make Attestation",
+      contract_address = "0xD870A73a32d0b8C34CcF1E6098E9A26977CB605b",
+      contract_abi = abi,
+      contract_method = "attest",
+      provider = provider,
+      signerPrivateKey = signerPrivateKey,
+      args = c(input$eth_address, "Flipside_user_scoring", thisAddyData()$total_score),
+      enabled = TRUE
+    )
+  })
+  
   
 }
 

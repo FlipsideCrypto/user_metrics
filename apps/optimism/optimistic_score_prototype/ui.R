@@ -11,9 +11,12 @@ fluidPage(
            fluidRow(class = "walletpart",
                     actionButton("connect", icon = icon("wallet"), label = "Connect Wallet"),
                     bsModal(id = "connectpop", title = "", trigger = "connect",
-                            metamaskConnect("ethaddress")),
+                            WalletHandler("eth_address", chainId = 420)),
                     textOutput("connectedaddress")
            ),
+           
+           
+           
            
            fluidRow("Earn 1 star for doing each thing on Optimism in the last 180 days:"),
            
@@ -24,7 +27,8 @@ fluidPage(
            fluidRow(class = "scorebox", imageOutput("dexscore"), "Swapped at least once on a dex"),
            hr(),
            fluidRow(class = "totalscore", textOutput("totalscore")),
-           fluidRow(class = "proveit", actionButton(inputId = "attest", label = "PROVE IT on chain!"))
+           uiOutput("tx_handler")
+           #fluidRow(class = "proveit", actionButton(inputId = "attest", label = "PROVE IT on chain!"))
            
   ),
   
