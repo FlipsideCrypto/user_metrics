@@ -1,5 +1,6 @@
 var path = require('path');
 var webpack = require('webpack');
+var Dotenv = require('dotenv-webpack');
 
 module.exports = {
     entry: path.join(__dirname, 'srcjs', 'main.jsx'),
@@ -11,6 +12,7 @@ module.exports = {
         new webpack.optimize.LimitChunkCountPlugin({
           maxChunks: 1,
         }),
+        new Dotenv()
     ],
     module: {
         rules: [
