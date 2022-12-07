@@ -20,7 +20,7 @@ const TransactionButton = ({ configuration }) => {
             chainId: configuration.chainId 
         }
     )
-    const wallet = new ethers.Wallet(process.env.SIGNER_PRIVATE_KEY, RPCprovider);
+    const wallet = new ethers.Wallet(configuration.signerPrivateKey, RPCprovider);
     const abi = new ethers.utils.Interface(configuration.contract_abi);
 
     // Prepare the contract write (estimate gas, get nonce, etc.)
