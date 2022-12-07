@@ -15,7 +15,6 @@ TransactionHandler <- function(
     contract_abi, 
     contract_method,
     provider,
-    signerPrivateKey,
     args, 
     enabled,
     default = ""
