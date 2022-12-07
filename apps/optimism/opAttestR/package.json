@@ -1,6 +1,7 @@
 {
   "private": true,
   "dependencies": {
+    "dotenv-webpack": "^8.0.1",
     "ethers": "^5.7.2",
     "reactstrap": "^9.1.5",
     "wagmi": "^0.8.3"

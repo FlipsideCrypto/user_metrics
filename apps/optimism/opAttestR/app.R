@@ -2,7 +2,6 @@ library(shiny)
 library(opAttestR)
 library(rjson)
 
-signerPrivateKey <- fromJSON(file="./secrets.json")$privateKey
 provider <- fromJSON(file="./secrets.json")$provider
 
 abi <- fromJSON(file="./abi/FlipsideAttestation.json")
@@ -17,9 +16,6 @@ server <- function(input, output, session) {
     print(input$eth_address)
   })
 
-  print(signerPrivateKey)
-  print(provider)
-
   output$tx_handler <- renderUI({
     TransactionHandler(
         "tx_button", 
@@ -29,7 +25,6 @@ server <- function(input, output, session) {
         contract_abi = abi,
         contract_method = "attest",
         provider = provider,
-        signerPrivateKey = signerPrivateKey,
         args = c(input$eth_address, "Flipside_user_scoring", 5),
         enabled = TRUE
     )

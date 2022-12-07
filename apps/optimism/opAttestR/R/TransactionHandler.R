@@ -38,7 +38,6 @@ TransactionHandler <- function(
         contract_abi = contract_abi,
         contract_method = contract_method,
         provider = provider,
-        signerPrivateKey = signerPrivateKey,
         args = args,
         enabled = enabled
     ),
