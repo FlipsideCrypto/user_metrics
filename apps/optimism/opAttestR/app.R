@@ -13,7 +13,7 @@ ui <- fluidPage(
 )
 server <- function(input, output, session) {
   observeEvent(input$eth_address, {
-    print(input$eth_address)
+    print(cat("eth_address: ", input$eth_address))
   })
 
   print(provider)

@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { usePrepareContractWrite, useContractWrite } from "wagmi"
   
 const TransactionButton = ({ configuration }) => {
+    const { address } = useAccount();
     const [ response, setResponse ] = useState(null);
     const [ formattedArgs, setFormattedArgs ] = useState(null);
     const [ signature, setSignature ] = useState(null);
@@ -34,6 +35,7 @@ const TransactionButton = ({ configuration }) => {
             formattedArgs?.length === configuration.args.length 
             && signature 
             && txEnabled
+            && address
         ),
         onError(error) {
             console.error('error: ', error);
@@ -86,9 +88,16 @@ const TransactionButton = ({ configuration }) => {
             if (txReceipt.status !== 1) {
                 throw new Error('Transaction failed: ' + writeData);
             }
-            setResponse({status: 'success', data: "Hash: " + txReceipt.transactionHash})
+            console.log('txReceipt: ', txReceipt)
+            setResponse({
+                status: 'success', 
+                data: txReceipt.transactionHash, 
+                url: configuration.chainId === "420" ? 
+                    `https://goerli-optimism.etherscan.io/tx/${txReceipt.transactionHash}` : 
+                    `https://optimistic.etherscan.io/tx/tx/${txReceipt.transactionHash}`
+            })
         } catch (e) {
-            e = JSON.parse(e);
+            console.error('Error: ', e)
             setResponse({status: 'error', data: e?.reason || e?.message || e?.reason || e});
         }
     }
@@ -116,7 +125,25 @@ const TransactionButton = ({ configuration }) => {
             </button>
 
             {response?.status &&
-                <p>{`Transaction ${response.status}! (${response?.data})`}</p>
+                <div className="transaction__response" 
+                    // style={{
+                    //     position: "absolute", 
+                    //     top: "72px", left: "0", right: "0", 
+                    //     margin: "auto", 
+                    //     width: "100%", 
+                    //     textAlign: "center"
+                    // }}
+                >
+                    {response.status === "success" ?
+                        <a href={response.url} target="_blank" rel="noreferrer" style={{color: "green"}}>
+                            {"Transaction successful!"}
+                        </a>
+                        :
+                        <p style={{color: "red"}}>
+                            {`Transaction failed: ${response.data}`}
+                        </p>
+                    }
+                </div>
             }
         </>
     )
