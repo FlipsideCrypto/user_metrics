@@ -125,15 +125,7 @@ const TransactionButton = ({ configuration }) => {
             </button>
 
             {response?.status &&
-                <div className="transaction__response" 
-                    // style={{
-                    //     position: "absolute", 
-                    //     top: "72px", left: "0", right: "0", 
-                    //     margin: "auto", 
-                    //     width: "100%", 
-                    //     textAlign: "center"
-                    // }}
-                >
+                <>
                     {response.status === "success" ?
                         <a href={response.url} target="_blank" rel="noreferrer" style={{color: "green"}}>
                             {"Transaction successful!"}
@@ -143,7 +135,7 @@ const TransactionButton = ({ configuration }) => {
                             {`Transaction failed: ${response.data}`}
                         </p>
                     }
-                </div>
+                </>
             }
         </>
     )
