@@ -1,130 +1,142 @@
 function(input, output, session) {
   
-  # read the connected address from the metamask connect funciton
-  output$connectedaddress <- renderText(paste0("connected as: ", input$eth_address))
+  # read the connected address from the metamask connect function
+  # output$connectedaddress <- renderText(paste0("connected as: ", input$eth_address))
   
   # isolate the data for that address so we can use it over and over
-  thisAddyData <- reactive(op.metrics.w[user_address == tolower(input$eth_address)])
-  #thisAddyData <- function() op.metrics.w[user_address == tolower(input$eth_address)]
+  thisAddyData <- reactive({
+    
+    print("connectpop:")
+    print(input$connectpop)
+    print("connect:")
+    print(input$connect)
+    print("address")
+    print(input$eth_address)
+    op.metrics.w[user_address == tolower(input$eth_address)]
+    })
   
-  # get the airdrop score and output an empty or full star depending on achievement 
+  observeEvent(input$eth_address, {
+    if(substr(input$eth_address, 1, 2) == "0x") {
+      updateActionButton(session = session, inputId = "connect", 
+                         label = paste0("connected as ", substr(input$eth_address, 1, 7), "..."),
+                         icon = character(0))
+    } else {
+      
+      updateActionButton(session = session, inputId = "connect", 
+                         icon = icon("wallet"), label = "  Connect Wallet")
+    }
+  })
+  
+  output$connectedaddress <- renderText({
+    if(substr(input$eth_address, 1, 2) == "0x") {
+      paste0("Connected as ", substr(input$eth_address, 1, 10), "...")
+    } else {
+      ""
+    }
+  })
+  
+  # get the airdrop score and output an empty or full button_filled depending on achievement 
   # for the connected address
-  output$airdropscore <- renderImage({
+  output$airdropscore <- renderText({
     # no address available:
     if(substr(input$eth_address, 1, 2) != "0x") {
-      return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
+      return(0)
       # does not score or no data available
     } else if (nrow(thisAddyData()) == 0) {
-      return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
+      return(0)
       # score!
     } else if (thisAddyData()$airdrop_score == 0) {
-      return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
+      return(0)
     } else {
-      return(list(src = "www/star.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "⭐️"))
+      return(1)
     }
-  }, deleteFile = FALSE)
+  })
   
   # repeat ^ for the other 4 scores:
-  output$nftscore <- renderImage({
+  output$nftscore <- renderText({
     # no address available:
     if(substr(input$eth_address, 1, 2) != "0x") {
-      return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
+      return(0)
       # does not score or no data available
     } else if (nrow(thisAddyData()) == 0) {
-      return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
+      return(0)
     } else if (thisAddyData()$nft_score == 0) {
-      return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
+      return(0)
       # score!
     } else {
-      return(list(src = "www/star.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "⭐️"))
+      return(1)
     }
-  }, deleteFile = FALSE)
+  })
   
-  output$delegatescore <- renderImage({
+  output$delegatescore <- renderText({
     # no address available:
     if(substr(input$eth_address, 1, 2) != "0x") {
-      return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
+      return(0)
       # does not score or no data available
     } else if (nrow(thisAddyData()) == 0) {
-      return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
+      return(0)
     } else if (thisAddyData()$delegation_score == 0) {
-      return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
+      return(0)
       # score!
     } else {
-      return(list(src = "www/star.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "⭐️"))
+      return(1)
     }
-  }, deleteFile = FALSE)
+  })
   
-  output$cexscore <- renderImage({
+  output$cexscore <- renderText({
     # no address available:
     if(substr(input$eth_address, 1, 2) != "0x") {
-      return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
+      return(0)
       # does not score or no data available
     } else if (nrow(thisAddyData()) == 0) {
-      return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
+      return(1)
     } else if (thisAddyData()$cex_score == 0) {
-      return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
+      return(1)
       # score!
     } else {
-      return(list(src = "www/star.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "⭐️"))
+      return(1)
     }
-  }, deleteFile = FALSE)
+  })
   
-  output$dexscore <- renderImage({
+  output$dexscore <- renderText({
     # no address available:
     if(substr(input$eth_address, 1, 2) != "0x") {
-      return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
+      return(0)
       # does not score or no data available
     } else if (nrow(thisAddyData()) == 0) {
-      return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
+      return(0)
     } else if (thisAddyData()$dex_score == 0) {
-      return(list(src = "www/emptystar.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "X"))
+      return(0)
       # score!
     } else {
-      return(list(src = "www/star.svg", contentType = 'image/svg+xml', height = 30, width = 30, alt = "⭐️"))
+      return(1)
     }
-  }, deleteFile = FALSE)
-  
+  })
   
   
   output$totalscore <- renderText({
-    
-    
-    if(substr(input$eth_address, 1, 2) != "0x") {
-      
-      "Connect to get your Optimist Score"
-      
-    } else if(nrow(thisAddyData()) == 0) {
-      
-      
-      "You don't qualify for an Optimist Score. Maybe buy an nft? or delegate some OP?"
-      
+    ifelse(substr(input$eth_address, 1, 2) == "0x", userScore(), 0)
+  })
+
+  
+  userScore <- reactive({
+    if(nrow(thisAddyData()) > 0) {
+      thisAddyData()$total_score
     } else {
-      
-      paste("You're a ", paste(rep("⭐️", thisAddyData()$total_score), collapse = ""), " Optimist")
-      
+      1
     }
-    
   })
-  
-  observeEvent(input$eth_address, {
-    print(input$eth_address)
-  })
-  
-  print(signerPrivateKey)
-  print(provider)
   
   output$tx_handler <- renderUI({
     TransactionHandler(
       "tx_button", 
       chainId = 420,
-      label = "Make Attestation",
+      label = "Attest Your Score On Chain",
       contract_address = "0xD870A73a32d0b8C34CcF1E6098E9A26977CB605b",
       contract_abi = abi,
       contract_method = "attest",
       provider = provider,
-      signerPrivateKey = signerPrivateKey,
-      args = c(input$eth_address, "Flipside_user_scoring", thisAddyData()$total_score),
+      args = c(input$eth_address, "Flipside_user_scoring", userScore()),
       enabled = TRUE
     )
   })
