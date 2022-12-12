@@ -202,6 +202,54 @@ explorer[, metric := 'n_unique_programs' ]
 explorer <- explorer[, list(metric, user_address, value, level) ]
 print( explorer %>% group_by(level) %>% summarize(n=n()) %>% as.data.table() )
 
+# nfts
+query <- "
+    WITH buys AS (
+        SELECT purchaser AS user_address
+        , SUM(sales_amount) AS buy_volume
+        FROM solana.core.fact_nft_sales
+        WHERE block_timestamp >= CURRENT_DATE - 180
+            AND succeeded
+        GROUP BY 1
+    ), sells AS (
+        SELECT seller AS user_address
+        , SUM(sales_amount) AS sell_volume
+        FROM solana.core.fact_nft_sales
+        WHERE block_timestamp >= CURRENT_DATE - 180
+            AND succeeded
+        GROUP BY 1
+    ), mints AS (
+        SELECT purchaser AS user_address
+        , SUM(mint_price) AS mint_volume
+        FROM solana.core.fact_nft_mints
+        WHERE block_timestamp >= CURRENT_DATE - 180
+            AND succeeded
+            AND mint_currency = 'So11111111111111111111111111111111111111111'
+            AND mint_price <= 15
+        GROUP BY 1
+    )
+    SELECT COALESCE(b.user_address, s.user_address, m.user_address) AS user_address
+    , COALESCE(b.buy_volume, 0) + COALESCE(s.sell_volume, 0) + COALESCE(m.mint_volume, 0) AS nft_volume
+    FROM buys b 
+    FULL OUTER JOIN sells s
+        ON s.user_address = b.user_address
+    FULL OUTER JOIN mints m
+        ON m.user_address = COALESCE(b.user_address, s.user_address)
+
+"
+mints <- QuerySnowflake(query)
+colnames(mints)[2] <- 'value'
+func <- function(x) {
+    if (x < 1) {return(0)}
+    if (x < 100) {return(1)}
+    if (x < 1000) {return(2)}
+    return(3)
+}
+mints[, level := sapply(value, func) ]
+mints[, metric := 'nft_volume' ]
+mints <- mints[, list(metric, user_address, value, level) ]
+print( mints %>% group_by(level) %>% summarize(n=n()) %>% as.data.table() )
+
 explorer[ user_address == '9VhsSZ6ni7dZtmKRHE81yAd3UQW1oKu9LNEWRGFMA5wj' ]
 explorer[ user_address == 'AoNVE2rKCE2YNA44V7NQt8N73JdPM7b6acZ2vzSpyPyi' ]
 
@@ -219,6 +267,7 @@ c <- governor[level > 0, list(user_address, level)]
 d <- bridgor[level > 0, list(user_address, level)]
 e <- staker[level > 0, list(user_address, level)]
 f <- explorer[level > 0, list(user_address, level)]
+g <- mints[level > 0, list(user_address, level)]
 
 colnames(a) <- c( 'user_address','longevity' )
 colnames(b) <- c( 'user_address','activity' )
@@ -226,9 +275,10 @@ colnames(c) <- c( 'user_address','governor' )
 colnames(d) <- c( 'user_address','bridgor' )
 colnames(e) <- c( 'user_address','staker' )
 colnames(f) <- c( 'user_address','explorer' )
+colnames(g) <- c( 'user_address','nfts' )
 
-df_list <- list(a, b, c, d, e, f)
-df <- Reduce(function(x, y) merge(x, y, all=TRUE), df_list) %>% as.data.table()
+df_list <- list(a, b, c, d, e, f, g)
+df <- Reduce(function(x, y) base::merge(x, y, all=TRUE), df_list) %>% as.data.table()
 df[ is.na(df) ] <- 0
 
 # longevity
@@ -255,6 +305,10 @@ df[, staker_3 := as.numeric(staker >= 3) ]
 df[, explorer_1 := as.numeric(explorer >= 1) ]
 df[, explorer_2 := as.numeric(explorer >= 2) ]
 df[, explorer_3 := as.numeric(explorer >= 3) ]
+# nfts
+df[, nfts_1 := as.numeric(nfts >= 1) ]
+df[, nfts_2 := as.numeric(nfts >= 2) ]
+df[, nfts_3 := as.numeric(nfts >= 3) ]
 
 df[, longevity := longevity_1 + (longevity_2 * 2) + (longevity_3 * 3) ]
 df[, activity := activity_1 + (activity_2 * 2) + (activity_3 * 3) ]
@@ -262,10 +316,13 @@ df[, governor := governor_1 + (governor_2 * 2) + (governor_3 * 3) ]
 df[, bridgor := bridgor_1 + (bridgor_2 * 2) + (bridgor_3 * 3) ]
 df[, staker := staker_1 + (staker_2 * 2) + (staker_3 * 3) ]
 df[, explorer := explorer_1 + (explorer_2 * 2) + (explorer_3 * 3) ]
+df[, nfts := nfts_1 + (nfts_2 * 2) + (nfts_3 * 3) ]
 
-df[, total_score := longevity + activity + governor + bridgor + staker + explorer ]
+df[, total_score := longevity + activity + governor + bridgor + staker + explorer + nfts ]
 
-score_criteria <- read.csv('/Users/kellen/data_science/viz/solarscored/score_criteria.csv') %>% as.data.table()
+# sudo cp ~/score_criteria.csv /rstudio-data
+# score_criteria <- read.csv('/Users/kellen/data_science/viz/solarscored/score_criteria.csv') %>% as.data.table()
+score_criteria <- read.csv('/rstudio-data/score_criteria.csv') %>% as.data.table()
 
 # head(df)
 

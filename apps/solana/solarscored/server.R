@@ -66,11 +66,12 @@ function(input, output, session) {
 	output$title_sentence <- renderText({
 		paste0('Rankings for ',
 					#  format(n.scores, big.mark = ','),
-					 ' Solana addresses scored across 15 metrics in 5 categories.')
+					 ' Solana addresses scored across 21 metrics in 7 categories.')
 	})
 	
 	output$scoreplot <- renderPlotly({
 		plot.data <- df %>% group_by(total_score) %>% summarize( N=n() ) %>% as.data.table()
+		plot.data <- plot.data[ total_score >= input$scorethreshold[1] & total_score <= input$scorethreshold[2]]
 		
 		plot.data[, color_group := ifelse(total_score >= input$scorethreshold[1] & total_score <= input$scorethreshold[2], 'in', 'out')]
 		
@@ -120,20 +121,20 @@ function(input, output, session) {
 		fig
 	})
 	
-	lapply(unique(score_criteria$category), function(tmp.category) {
-	  cat.name.fix <- tolower(gsub(x = tmp.category, pattern = ' ', '_', fixed = TRUE))
-	  output[[cat.name.fix]] <- renderText({
-	    if(is.null(input$addy) | input$addy == '') {
-	      paste0('avg score: ', sprintf('%.1f', round(mean(inRangeScores()[[tmp.category]]), 1)))
-	    } else {
-	      paste0('score: ',
-	             scores[address == input$addy][[tmp.category]],
-	             ' (avg ', 
-	             sprintf('%.1f', round(mean(inRangeScores()[[tmp.category]]), 1)),
-	             ')')
-	    }
-	  })
-	})
+	# lapply(unique(score_criteria$category), function(tmp.category) {
+	#   cat.name.fix <- tolower(gsub(x = tmp.category, pattern = ' ', '_', fixed = TRUE))
+	#   output[[cat.name.fix]] <- renderText({
+	#     if(is.null(input$addy) | input$addy == '') {
+	#       paste0('avg score: ', sprintf('%.1f', round(mean(inRangeScores()[[tmp.category]]), 1)))
+	#     } else {
+	#       paste0('score: ',
+	#              scores[address == input$addy][[tmp.category]],
+	#              ' (avg ', 
+	#              sprintf('%.1f', round(mean(inRangeScores()[[tmp.category]]), 1)),
+	#              ')')
+	#     }
+	#   })
+	# })
 	
 	lapply(score_criteria$metric_name, function(metric) {
 	  output[[metric]] <- renderText({
@@ -166,11 +167,11 @@ function(input, output, session) {
 		print('input$addy')
 		print(input$addy)
 		if(!length(input$addy)) {
-			paste0(0, '/35')
+			paste0(0, '/42')
 		} else {
 			cur <- df[ (user_address == input$addy) ]
 			score <- ifelse(nrow(cur) > 0, cur$total_score[1], 0)
-			paste0(score, '/35')
+			paste0(score, '/42')
 		}
 	})
 	

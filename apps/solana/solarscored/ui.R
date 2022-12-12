@@ -36,7 +36,7 @@ fluidPage(
 	}),
 	useShinyjs(),
 	fluidRow(class = 'titles', 'SolarScored Rankings'),
-	fluidRow(class = 'description', 'Some descriptive stuff'),
+	fluidRow(class = 'description', 'Version 0.1 of Creating an LTV metric on Solana. Can be used to quantify user value and behavior for the Foundation or projects looking to airdrop or target users.'),
 	br(),
 	fluidRow(class = 'description', textOutput('title_sentence')),
 	br(),
@@ -44,11 +44,11 @@ fluidPage(
 		class = 'wrapper',
 		column(
 			5,
-			fluidRow(class = 'choose', 'Select a score range (0 to 35) to subset addresses'),
+			fluidRow(class = 'choose', 'Select a score range (0 to 42) to subset addresses'),
 			fluidRow(
 				div(
 					style = 'margin: auto; width: 90%;'
-					, sliderInput(inputId = 'scorethreshold', label = NULL, min = 1, max = 35, value = c(5, 25), width = '100%')
+					, sliderInput(inputId = 'scorethreshold', label = NULL, min = 1, max = 42, value = c(1, 42), width = '100%')
 				)
 			)
 			, fluidRow(
@@ -114,6 +114,10 @@ fluidPage(
 						'EXPLORING'
 						, div(class = 'catscore', uiOutput('explorer'))
 					)
+					, tags$th(
+						'NFTS'
+						, div(class = 'catscore', uiOutput('nfts'))
+					)
 				),
 				tags$tr(
 					tags$td(
@@ -124,7 +128,7 @@ fluidPage(
 							, div(class = 'rightDiv', div(class='hidey', id = 'longevity_1_c', img(src = 'badge_1.svg', width = '20px', height = '20px')))
 						)
 						, br()
-						, div(textOutput('longevity_1'))
+						, div(class='small-text', textOutput('longevity_1'))
 					)
 					, tags$td(
 						id = 'activity_1_div'
@@ -137,7 +141,7 @@ fluidPage(
 							, div(class = 'rightDiv', div(class='hidey', id = 'activity_1_c', img(src = 'badge_1.svg', width = '20px', height = '20px')))
 						)
 						, br()
-						, div(textOutput('activity_1'))
+						, div(class='small-text', textOutput('activity_1'))
 					)
 					, tags$td(
 						id = 'governor_1_div'
@@ -147,26 +151,32 @@ fluidPage(
 							, div(class = 'rightDiv', div(class='hidey', id = 'governor_1_c', img(src = 'badge_1.svg', width = '20px', height = '20px')))
 						)
 						, br()
-						, div(textOutput('governor_1'))
+						, div(class='small-text', textOutput('governor_1'))
 					),
 					tags$td(id = 'bridgor_1_div', 
 						div(class='outerDiv', 
 								div(class = 'leftDiv', 'Bridgor'), 
 								div(class = 'rightDiv', div(class='hidey', id = 'bridgor_1_c', img(src = 'badge_1.svg', width = '20px', height = '20px')))),
 						br(),
-						div(textOutput('bridgor_1'))),
+						div(class='small-text', textOutput('bridgor_1'))),
 					tags$td(id = 'staker_1_div', 
 						div(class='outerDiv', 
 								div(class = 'leftDiv', 'Stakor'), 
 								div(class = 'rightDiv', div(class='hidey', id = 'staker_1_c', img(src = 'badge_1.svg', width = '20px', height = '20px')))),
 						br(),
-						div(textOutput('staker_1'))),
+						div(class='small-text', textOutput('staker_1'))),
 					tags$td(id = 'explorer_1_div', 
 						div(class='outerDiv', 
 								div(class = 'leftDiv', 'Exploror'), 
 								div(class = 'rightDiv', div(class='hidey', id = 'explorer_1_c', img(src = 'badge_1.svg', width = '20px', height = '20px')))),
 						br(),
-						div(textOutput('explorer_1')))
+						div(class='small-text', textOutput('explorer_1'))),
+					tags$td(id = 'nfts_1_div', 
+						div(class='outerDiv', 
+								div(class = 'leftDiv', 'I dabble'), 
+								div(class = 'rightDiv', div(class='hidey', id = 'nfts_1_c', img(src = 'badge_1.svg', width = '20px', height = '20px')))),
+						br(),
+						div(class='small-text', textOutput('nfts_1')))
 				),
 				tags$tr(
 					tags$td(
@@ -177,7 +187,7 @@ fluidPage(
 							, div(class = 'rightDiv', div(class='hidey', id = 'longevity_2_c', img(src = 'badge_2.svg', width = '20px', height = '20px')))
 						)
 						, br()
-						, div(textOutput('longevity_2'))
+						, div(class='small-text', textOutput('longevity_2'))
 					)
 					, tags$td(
 						id = 'activity_2_div'
@@ -190,7 +200,7 @@ fluidPage(
 							, div(class = 'rightDiv', div(class='hidey', id = 'activity_2_c', img(src = 'badge_2.svg', width = '20px', height = '20px')))
 						)
 						, br()
-						, div(textOutput('activity_2'))
+						, div(class='small-text', textOutput('activity_2'))
 					)
 					, tags$td(
 						id = 'governor_2_div'
@@ -200,26 +210,32 @@ fluidPage(
 							, div(class = 'rightDiv', div(class='hidey', id = 'governor_2_c', img(src = 'badge_2.svg', width = '20px', height = '20px')))
 						)
 						, br()
-						, div(textOutput('governor_2'))
+						, div(class='small-text', textOutput('governor_2'))
 					),
 					tags$td(id = 'bridgor_2_div', 
 						div(class='outerDiv', 
 								div(class = 'leftDiv', 'Bridgooor'), 
 								div(class = 'rightDiv', div(class='hidey', id = 'bridgor_2_c', img(src = 'badge_2.svg', width = '20px', height = '20px')))),
 						br(),
-						div(textOutput('bridgor_2'))),
+						div(class='small-text', textOutput('bridgor_2'))),
 					tags$td(id = 'staker_2_div', 
 						div(class='outerDiv', 
 								div(class = 'leftDiv', 'Stakooor'), 
 								div(class = 'rightDiv', div(class='hidey', id = 'staker_2_c', img(src = 'badge_2.svg', width = '20px', height = '20px')))),
 						br(),
-						div(textOutput('staker_2'))),
+						div(class='small-text', textOutput('staker_2'))),
 					tags$td(id = 'explorer_2_div', 
 						div(class='outerDiv', 
 								div(class = 'leftDiv', 'Explorooor'),
 								div(class = 'rightDiv', div(class='hidey', id = 'explorer_2_c', img(src = 'badge_2.svg', width = '20px', height = '20px')))),
 						br(),
-						div(textOutput('explorer_2')))
+						div(class='small-text', textOutput('explorer_2'))),
+					tags$td(id = 'nfts_2_div', 
+						div(class='outerDiv', 
+								div(class = 'leftDiv', 'NFT Enjoyooor'),
+								div(class = 'rightDiv', div(class='hidey', id = 'nfts_2_c', img(src = 'badge_2.svg', width = '20px', height = '20px')))),
+						br(),
+						div(class='small-text', textOutput('nfts_2')))
 				),
 				tags$tr(
 					tags$td(
@@ -230,7 +246,7 @@ fluidPage(
 							, div(class = 'rightDiv', div(class='hidey', id = 'longevity_3_c', img(src = 'badge_3.svg', width = '20px', height = '20px')))
 						)
 						, br()
-						, div(textOutput('longevity_3'))
+						, div(class='small-text', textOutput('longevity_3'))
 					)
 					, tags$td(
 						id = 'activity_3_div'
@@ -243,7 +259,7 @@ fluidPage(
 							, div(class = 'rightDiv', div(class='hidey', id = 'activity_3_c', img(src = 'badge_3.svg', width = '20px', height = '20px')))
 						)
 						, br()
-						, div(textOutput('activity_3'))
+						, div(class='small-text', textOutput('activity_3'))
 					)
 					, tags$td(
 						id = 'governor_3_div'
@@ -253,26 +269,32 @@ fluidPage(
 							, div(class = 'rightDiv', div(class='hidey', id = 'governor_3_c', img(src = 'badge_3.svg', width = '20px', height = '20px')))
 						)
 						, br()
-						, div(textOutput('governor_3'))
+						, div(class='small-text', textOutput('governor_3'))
 					),
 					tags$td(id = 'bridgor_3_div', 
 						div(class='outerDiv', 
 								div(class = 'leftDiv', 'Bridgooooor'), 
 								div(class = 'rightDiv', div(class='hidey', id = 'bridgor_3_c', img(src = 'badge_3.svg', width = '20px', height = '20px')))),
 						br(),
-						div(textOutput('bridgor_3'))),
+						div(class='small-text', textOutput('bridgor_3'))),
 					tags$td(id = 'staker_3_div', 
 						div(class='outerDiv', 
 								div(class = 'leftDiv', 'Stakooooor'), 
 								div(class = 'rightDiv', div(class='hidey', id = 'staker_3_c', img(src = 'badge_3.svg', width = '20px', height = '20px')))),
 						br(),
-						div(textOutput('staker_3'))),
+						div(class='small-text', textOutput('staker_3'))),
 					tags$td(id = 'explorer_3_div', 
 						div(class='outerDiv', 
 								div(class = 'leftDiv', 'Explorooooor'), 
 								div(class = 'rightDiv', div(class='hidey', id = 'explorer_3_c', img(src = 'badge_3.svg', width = '20px', height = '20px')))),
 						br(),
-						div(textOutput('explorer_3')))
+						div(class='small-text', textOutput('explorer_3'))),
+					tags$td(id = 'nfts_3_div', 
+						div(class='outerDiv', 
+								div(class = 'leftDiv', 'NFT Whale'), 
+								div(class = 'rightDiv', div(class='hidey', id = 'nfts_3_c', img(src = 'badge_3.svg', width = '20px', height = '20px')))),
+						br(),
+						div(class='small-text', textOutput('nfts_3')))
 				),
 					) # close table
 					) # close table row
@@ -303,10 +325,10 @@ fluidPage(
 	fluidRow(class = 'wrapper',
 					 div(class = 'boldwhite', 'More About this App'),
 					 br(),
-					 div(class = 'disclaimer', "This app was created to showcase 15 behaviors that we associate with positive contribution to the Terra ecosystem.
+					 div(class = 'disclaimer', "This app was created to showcase 21 behaviors that we associate with positive contribution to the Solana ecosystem.
 							 These are certainly not the only ways that an address can contribute to the ecosystem, so we encourage you to DYOR. We've made all of
 							 our data available, ether through the download links above, or if you want to go deeper, we have linked to every query used to create
-							 this leadearboard in the table below. Note that there are ~700k addresses in the full data file as it includes addresses that scored 0 but still
+							 this leadearboard in the table below. Note that there are ~6M addresses in the full data file as it includes addresses that scored 0 but still
 							 had enough activity to show up in the calculation of at least one metric. The data refreshes once every two hours."),
 					 br(),
 					 div(class = 'disclaimer', 'We love geeking out on methodology and data, so if you have questions or ideas please visit us on our
