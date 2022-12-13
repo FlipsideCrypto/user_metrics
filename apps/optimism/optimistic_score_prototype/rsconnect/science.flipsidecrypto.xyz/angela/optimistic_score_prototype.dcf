@@ -5,10 +5,10 @@ account: angela
 server: science.flipsidecrypto.xyz
 hostUrl: https://science.flipsidecrypto.xyz/__api__
 appId: 205
-bundleId: 645
+bundleId: 669
 url: https://science.flipsidecrypto.xyz/content/b2da29fb-9ed6-4732-b4cd-0b7c1781a0be/
-when: 1668185709.31328
-lastSyncTime: 1668185709.31329
+when: 1670352842.93793
+lastSyncTime: 1670352842.93794
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: update_data.R
+ignoredFiles: api_key.txt|update_data.R

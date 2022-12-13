@@ -2,4 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
+*.DS_Store
 .DS_Store
+*.txt
+secrets.json
+*.dcf

@@ -1,53 +1,202 @@
 body {
-background: white;
-background: linear-gradient(90deg, rgba(255,196,202,0.19511554621848737) 0%, rgba(255,255,255,0) 100%);  color: #919EAB;
-  font-family: 'Inter';
-  font-size: 18px;
+  background: white;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
   font-weight: 400;
+  color: black;
+}
+
+a, a:hover, a:visited, a:active {
+  color: red;
 }
 
 .container-fluid {
   background-color: transparent;
-  max-width: 700px;
   margin: 0 auto;
   height: 100%;
-  padding-top: 5%;
   padding-left: 0;
   padding-right: 0;
 }
 
+.titlebar {
+  height: 70px;
+  box-shadow: rgb(20 23 26 / 6%) 0px 6px 8px -6px, rgb(20 23 26 / 4%) 0px 8px 16px -6px;
+  margin-bottom: 25px;
+  padding-left: 2%;
+}
+
 .wrapper {
-  border-radius: 16px;
-  border: 1px solid #FF0420;
   background-color: white;
-  margin-top: -5%;
-  padding-top: 25px;
-  padding-bottom: 3%;
-  padding-right: 5%;
-  padding-left: 5%;
-  margin-bottom: 30px;
+}
+
+#connect {
+  font-family: Rubik;
+  color: #F60001;
+  font-size: 1.02em;
+  padding: 8px;
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(to right, #F60001, #F60001) border-box;
+  border-radius: 4px;
+  border: 3px solid transparent;
 }
 
 .walletpart {
   padding-top: 2%;
   padding-bottom: 2%;
+  text-align: right;
+}
+
+.description {
+  font-size: 0.85em;
+  color: #353535;
+}
+
+.alignholder {
+  display: flex;
+  width: 85%;
+  margin-left: 10%;
+  margin-right: 10%;
+}
+
+.left {
+  height: 50px;
+  line-height: 50px;
+  width: 20%;
+  background-color: white;
+  border: 2px red solid;
+  border-radius: 4px 0 0 4px;
+  color: red;
+  text-align: center;
+  font-family: Rubik;
+  font-weight: 600;
+  font-size: 1.2em;
 
 }
+
+.text {
+  height: 50px;
+  line-height: 50px;
+  width: 80%;
+  background-color: red;
+  border-radius: 0 4px 4px 0;
+  border: 2px red solid;
+  color: white;
+  text-align: left;
+  padding-left: 10px;
+}
+
+
+.scoreholder {
+  border: 2px solid red;
+  border-radius: 17px;
+  padding: 10px 30px 0 37px;
+  max-width: 630px;
+  margin: auto;
+}
+
+.bottom {
+  padding: 10px 30px 0 37px;
+  max-width: 634px;
+  margin: auto;
+  text-align: center;
+}
+
+.links > a {
+  text-decoration: underline;
+}
+
 
 .scorebox {
   display: flex;
-    border: 1px solid black;
-  border-radius: 5px;
   padding: 10px;
-  margin-left: 10%;
-  margin-right: 10%;
-  margin-bottom: 20px;
+}
+
+.totalscorebox {
+  display: flex;
+  width: 86%;
+  margin-left: 12%;
+  margin-right: 12%;
+  margin-bottom: 38px;
+}
+
+.scorecircle {
+  background-color: red;
+  color: white;
+  font-family: Rubik;
+  font-size: 4em;
+  text-align: center;
+  border-radius: 50px;
+  height: 100px;
+  width: 100px;
+  line-height: 100px;
 }
 
 .shiny-image-output {
-  height: 30px !important;
-  width: 30px !important;
+  height: 25px !important;
+  width: 25px !important;
   margin-right: 10px;
+}
+
+button {
+  border: 1px red solid;
+  padding: 5px;
+  color: red;
+  background-color: white;
+  margin: 10px;
+  border-radius: 4px;
+  min-width: 250px;
+}
+
+
+#tx_button > button {
+  font-family: Rubik;
+  color: white;
+  background-color: #F60001;
+  font-size: 1.3em;
+  padding: 10px;
+  border-radius: 4px;
+  border: 3px solid transparent;
+}
+
+.scorecolumns {
+  padding-left: 30px;
+  padding-right: 30px;
+  margin-top: 10px;
+}
+
+
+.txbuttondiv {
+  padding-top: 7%;
+}
+
+.modal-dialog {
+  margin-left: 30%;
+  margin-right: 30%;
+}
+
+.modal-content {
+  background-color: white;
+  border: 1px solid #F60001;
+}
+.modal-title {
+  color: red;
+  font-weight: bold;
+  border: none;
+}
+.modal-body {
+  border: none;
+  text-align: center;
+}
+.modal-footer {
+ border: none; 
+}
+
+
+
+.links {
+  color: red;
+  font-size: 0.95em;
+  text-align: center;
 }
 
 

@@ -51,17 +51,6 @@ nft.profits <- nft.trades[, list(user_profit_usd = sum(profit_usd), n_trades = s
   .[, list(n_users = uniqueN(user_address), prop_profitiable = mean(user_profit_usd > 0), n_trades = sum(n_trades)/2), by = nf_token_contract] %>%
   .[order(-prop_profitiable)]
 
-coolness[1:10]
-ggplot(coolness,
-       aes(x = n_users, y = n_trades, size = prop_profitiable)) +
-  geom_point()
-
-
-
-
-
-
-
 # # increment fi
 # flow.contracts <- QuerySnowflake("SELECT * FROM flow.core.dim_contract_labels")
 # flow.contracts[str_detect(tolower(contract_name), "fi")]
@@ -97,7 +86,8 @@ ggplot(coolness,
 # basic stats:
 
 # trades
-flowscored.metrics <- nft.trades[, list(metric_name = "nft_n_trades", metric = n_trades), by = list(user_address)]
+flowscored.metrics <- nft.trades[, list(metric_name = "nft_n_buys", metric = n_buys), by = list(user_address)]
+flowscored.metrics <- nft.trades[, list(metric_name = "nft_n_sells", metric = n_sells), by = list(user_address)]
 # days since last tx
 flowscored.metrics <- rbind(flowscored.metrics,
                             activity.stats[, list(user_address, metric_name = "days_since_last_tx", metric = last_txn)])
