@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { useState, useEffect, useMemo } from "react";
-import { usePrepareContractWrite, useContractWrite } from "wagmi"
+import { useAccount, usePrepareContractWrite, useContractWrite } from "wagmi"
   
 const TransactionButton = ({ configuration }) => {
     const { address } = useAccount();

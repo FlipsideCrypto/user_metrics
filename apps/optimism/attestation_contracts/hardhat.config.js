@@ -20,8 +20,8 @@ task("deploy", "Deploys the protocol")
 
       const chainId = await getChainId()
 
-      const signer = deployer.address;
-      const OPAttestation = "0x7787194CCA11131C0159c0AcFf7E127CF0B676ed"
+      const signer = "0xB6Eca018539713870a780c123926aff8889FD304";
+      const OPAttestation = "0xEE36eaaD94d1Cc1d0eccaDb55C38bFfB6Be06C77"
 
       // Deploying the FlipsideAttestation router
       const FlipsideAttestation = await ethers.getContractFactory("FlipsideAttestation");
@@ -96,7 +96,7 @@ module.exports = {
   },
   etherscan: {
       apiKey: {
-        optimism: process.env.OPTIMISM_EXPLORER_API_KEY,
+        optimisticEthereum: process.env.OPTIMISM_EXPLORER_API_KEY,
       }
   },
   defaultNetwork: "hardhat",
@@ -113,9 +113,10 @@ module.exports = {
           }
       },
       optimism: {
-          url: `https://eth-goerli.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+          chainId: 10,
+          url: `https://opt-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
           accounts: [`0x${process.env.PRIVATE_KEY}`],
-          gasPrice: 5000000000, // 5 gwei
+        //   gasPrice: 5000000000, // 5 gwei
       },
       optimism_goerli: {
             url: `https://opt-goerli.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
