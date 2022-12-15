@@ -1,9 +1,10 @@
 import { ethers } from "ethers";
 import { useState, useEffect, useMemo } from "react";
-import { useAccount, usePrepareContractWrite, useContractWrite } from "wagmi"
+import { useNetwork, useAccount, usePrepareContractWrite, useContractWrite } from "wagmi"
   
 const TransactionButton = ({ configuration }) => {
     const { address } = useAccount();
+    const { chain } = useNetwork();
     const [ response, setResponse ] = useState(null);
     const [ formattedArgs, setFormattedArgs ] = useState(null);
     const [ signature, setSignature ] = useState(null);
@@ -33,6 +34,7 @@ const TransactionButton = ({ configuration }) => {
             [...formattedArgs, signature] : [...configuration.args, "0x"],
         enabled: Boolean(
             formattedArgs?.length === configuration.args.length 
+            && chain.id === configuration.chainId
             && signature 
             && txEnabled
             && address
@@ -60,7 +62,6 @@ const TransactionButton = ({ configuration }) => {
 
         const arr = [userAddress, flipsideKey, score];
 
-        console.log('Flipside Attestation Key: ', flipsideKey)
         setFormattedArgs(arr);
         return arr;
     }
@@ -94,7 +95,7 @@ const TransactionButton = ({ configuration }) => {
                 data: txReceipt.transactionHash, 
                 url: configuration.chainId === "420" ? 
                     `https://goerli-optimism.etherscan.io/tx/${txReceipt.transactionHash}` : 
-                    `https://optimistic.etherscan.io/tx/tx/${txReceipt.transactionHash}`
+                    `https://optimistic.etherscan.io/tx/${txReceipt.transactionHash}`
             })
         } catch (e) {
             console.error('Error: ', e)
@@ -127,11 +128,11 @@ const TransactionButton = ({ configuration }) => {
             {response?.status &&
                 <>
                     {response.status === "success" ?
-                        <a href={response.url} target="_blank" rel="noreferrer" style={{color: "green"}}>
+                        <a href={response.url} target="_blank" rel="noreferrer">
                             {"Transaction successful!"}
                         </a>
                         :
-                        <p style={{color: "red"}}>
+                        <p>
                             {`Transaction failed: ${response.data}`}
                         </p>
                     }

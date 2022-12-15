@@ -11,7 +11,6 @@ const WalletButton = ({ setAddress, chainId }) => {
   });
 
   useEffect(() => {
-    console.log('address: ', address);
     setAddress(address ?? "");
   }, [address])
 
