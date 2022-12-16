@@ -11,10 +11,13 @@ SELECT
       CURRENT_TIMESTAMP
     )
   ) AS days_since_last_txn,
-  SUM(
-    CASE
-      WHEN tx_type <> 'pay' THEN 1
-      ELSE 0
+  COUNT(
+    DISTINCT CASE
+      WHEN tx_type = 'pay' THEN NULL
+      ELSE COALESCE(
+        tx_group_ID,
+        tx_id
+      )
     END
   ) AS n_complex_txn,
   COUNT(
