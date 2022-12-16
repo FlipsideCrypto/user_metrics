@@ -226,6 +226,19 @@ simple_transfers_combined AS (
 SELECT * FROM simple_transfer_in NATURAL FULL OUTER JOIN simple_transfer_out
 ),
 
+-- CLAIMAINT AIRDROP TOKEN TRANSFER OUT TO CENTRAL EXCHANGE **************
+
+CEX_transfer_out AS (
+SELECT FROM_ADDRESS as USER_ADDRESS, CONTRACT_ADDRESS, TOKEN_SYMBOL, 
+SUM(AMOUNT) as cex_transfer_out
+  FROM airdrop_claimant_token_transfers
+  WHERE 
+FROM_ADDRESS IN (SELECT user_address FROM airdrop_claims) AND 
+TO_ADDRESS_TYPE IN ('EOA-cex')
+GROUP BY USER_ADDRESS, CONTRACT_ADDRESS, TOKEN_SYMBOL
+),
+  
+
 -- COMBINE EVERYTHING SO FAR *************
       /*
       NOTE: a user might be a claimant of 1 airdrop token and a trader of another they didn't claim
@@ -240,7 +253,8 @@ FROM  claimant_balances NATURAL FULL OUTER JOIN
       airdrop_claims NATURAL FULL OUTER JOIN 
       trades_combined NATURAL FULL OUTER JOIN
       lp_combined NATURAL FULL OUTER JOIN 
-      simple_transfers_combined 
+      simple_transfers_combined NATURAL FULL OUTER JOIN 
+      CEX_transfer_out
   WHERE claimed_token_volume IS NOT NULL 
   ),
 
@@ -262,6 +276,22 @@ FROM  claimant_balances NATURAL FULL OUTER JOIN
             - simple_amount_in = 0 
             - amount_deposited_lp = 0
         
+       - Hedgoooor: Claimed, sold a piece, kept the rest. Never bought, received, provided liquidity
+            - token_balance < CLAIMED_TOKEN_VOLUME 
+            - token_balance > 0
+            - amount_bought = 0
+            - amount_sold < CLAIMED_TOKEN_VOLUME
+            - amount_sold > 0
+            - amount_deposited_lp = 0
+            - simple_amount_in = 0
+
+       - Exchangooor: Claimed, sent it all to a central exchange; never bought, received, nor provided liquidity
+           - token-balance = 0
+           - amount_bought = 0 
+           - amount_sold = 0
+           - cex_transfer_out >= CLAIMED_TOKEN_VOLUME
+           - amount_deposited_lp = 0
+
         - Market Maker: Provided liquidity, may or may not have withdrawn and sold later.  
             - amount_deposited_lp > 0 
             
@@ -284,11 +314,14 @@ FROM  claimant_balances NATURAL FULL OUTER JOIN
         - N/A: Anyone else, potentially doing a variety of maneuvers and not cleanly fitting into another category. 
     */
 
-
 SELECT *, 
    CASE 
    WHEN token_balance >= claimed_token_volume AND amount_bought IS NULL AND amount_sold IS NULL AND amount_deposited_lp IS NULL THEN 'Keepooor'
-   WHEN token_balance = 0 AND amount_bought IS NULL AND amount_sold >= claimed_token_volume AND simple_amount_in IS NULL AND amount_deposited_lp IS NULL THEN 'Dumpooor'
+   WHEN token_balance = 0 AND amount_bought IS NULL AND amount_sold >= claimed_token_volume AND
+       simple_amount_in IS NULL AND amount_deposited_lp IS NULL THEN 'Dumpooor'
+   WHEN token_balance > 0 AND token_balance < claimed_token_volume AND amount_bought IS NULL AND 
+        amount_sold IS NOT NULL AND amount_sold < claimed_token_volume AND amount_deposited_lp IS NULL AND simple_amount_in IS NULL THEN 'Hedgooor' 
+   WHEN token_balance = 0 AND amount_bought IS NULL AND amount_sold IS NULL AND cex_transfer_out >= claimed_token_volume AND amount_deposited_lp IS NULL THEN 'Exchangooor'
    WHEN amount_deposited_lp > 0 THEN 'Market Maker'
    WHEN amount_bought > 0 AND amount_sold > 0 AND amount_deposited_lp IS NULL THEN 'Trader'
    WHEN amount_bought IS NULL AND amount_sold > 0 AND simple_amount_in > 0 AND amount_deposited_lp IS NULL THEN 'Maximizooor'
@@ -296,6 +329,3 @@ SELECT *,
    ELSE 'Undefined'
    END as category 
 FROM claims_actions
-
-
-
