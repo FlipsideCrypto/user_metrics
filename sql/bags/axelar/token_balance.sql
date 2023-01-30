@@ -1,0 +1,15 @@
+SELECT
+    b.address AS user_address,
+    t.address AS token_contract,
+    t.project_name AS token_symbol,
+    SUM(balance / POW(10, t.decimal)) AS token_balance
+FROM
+    axelar.core.fact_daily_balances b
+    INNER JOIN axelar.core.dim_tokens t
+    ON b.currency = t.alias
+WHERE
+    DATE = CURRENT_DATE
+GROUP BY
+    user_address,
+    token_contract,
+    t.project_name
