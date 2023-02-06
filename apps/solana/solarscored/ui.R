@@ -35,6 +35,9 @@ fluidPage(
 		)
 	}),
 	useShinyjs(),
+	br(),
+	fluidRow(class = 'description', textOutput('your_address')),
+	solAttestR::SolWalletHandler("wallet_address"),
 	fluidRow(class = 'titles', 'SolarScored Rankings'),
 	fluidRow(class = 'description', 'Version 0.1 of Creating an LTV metric on Solana. Can be used to quantify user value and behavior for the Foundation or projects looking to airdrop or target users.'),
 	br(),

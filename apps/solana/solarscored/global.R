@@ -1,5 +1,5 @@
 # lunatics
-# setwd('/Users/kellen/data_science/viz/solarscored')
+# setwd('/Users/kellen/git/user_metrics/apps/solana/solarscored')
 
 library(shiny)
 library(data.table)
@@ -9,7 +9,11 @@ library(plotly)
 library(shinyjs)
 library(shinyBS)
 library(dplyr)
+library(solAttestR)
 # library(terraConnectr)
+
+#install.packages("~/user_metrics/apps/solana/solAttestR_0.0.0.9000.tar.gz", repos = NULL, type="source")
+#install.packages("~/user_metrics/apps/optimism/opAttestR_0.0.0.9000.tar.gz", repos = NULL, type="source")
 
 
 #not used:
@@ -25,6 +29,7 @@ file.location <- ifelse(Sys.info()[["user"]] == "rstudio-connect",
                         "solarscored_data.RData")
 load(file.location)
 # print(exists("score.criteria"))
+score_criteria <- read.csv('./score_criteria.csv') %>% as.data.table()
 
 
 round_any <- function(x, accuracy, f=round){f(x/ accuracy) * accuracy}

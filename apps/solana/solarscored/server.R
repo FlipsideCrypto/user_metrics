@@ -10,8 +10,6 @@ function(input, output, session) {
 	
 	output$inputaddy <- renderUI({
 		url.addy <- parseQueryString(session$clientData$url_search)
-		print('url.addy')
-		print(url.addy)
 		
 		if(length(url.addy) > 0) {
 			default.addy <- names(url.addy)[1]
@@ -67,6 +65,32 @@ function(input, output, session) {
 		paste0('Rankings for ',
 					#  format(n.scores, big.mark = ','),
 					 ' Solana addresses scored across 21 metrics in 7 categories.')
+	})
+
+	is.blank <- function(x, false.triggers=FALSE){
+		if(is.function(x)) return(FALSE) # Some of the tests below trigger
+										# warnings when used on functions
+		return(
+			is.null(x) ||                # Actually this line is unnecessary since
+			length(x) == 0 ||            # length(NULL) = 0, but I like to be clear
+			all(is.na(x)) ||
+			all(x=="") ||
+			(false.triggers && all(!x))
+		)
+	}
+	observeEvent(input$wallet_address, {
+		print('input$wallet_address')
+		print(input$wallet_address)
+	})
+
+	output$your_address <- renderText({
+		val <- 'Wallet not connected'
+		print('input$wallet_address')
+		print(input$wallet_address)
+		if (!is.blank(input$wallet_address)) {
+			val <- paste0('Your address is ', input$wallet_address)
+		}
+		paste0(val)
 	})
 	
 	output$scoreplot <- renderPlotly({
@@ -150,9 +174,6 @@ function(input, output, session) {
 	    change.class <- df[user_address == input$addy][[tmp.metric]] > 0
 
 	    if(length(change.class) == 0) change.class <- FALSE
-		print('tmp.metric')
-		print(tmp.metric)
-		print(change.class)
 	    toggleClass(id = paste0(tmp.metric, '_div'), 
 	                class = 'bright',
 	                condition = change.class)
@@ -164,8 +185,6 @@ function(input, output, session) {
 	})
 	
 	output$user_score <- renderText({
-		print('input$addy')
-		print(input$addy)
 		if(!length(input$addy)) {
 			paste0(0, '/42')
 		} else {
