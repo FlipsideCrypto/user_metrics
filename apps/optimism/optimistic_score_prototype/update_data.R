@@ -38,7 +38,7 @@ op.metrics.w[, delegation_score := ifelse(n_delegations > 0, 1, 0)]
 op.metrics.w[, nft_score := ifelse(n_trades > 0, 1, 0)]
 op.metrics.w[, dex_score := ifelse(n_swaps > 0, 1, 0)]
 
-op.metrics.w[, total_score := airdrop_score + cex_score + delegation_score + nft_score + dex_score]
+op.metrics.w[, total_score := airdrop_score + 1 + delegation_score + nft_score + dex_score]
 
 op.metrics.w <- op.metrics.w[total_score > 0]
 

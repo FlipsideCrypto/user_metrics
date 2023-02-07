@@ -1,0 +1,267 @@
+---
+title: "Update Optimist Score Prototype Data"
+author: "Angeal"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Run Updates
+Hello I am running this at `r Sys.time()`
+
+```{r update}
+library(fasttime)
+library(gridExtra)
+library(ggplot2)
+library(data.table)
+library(reshape2)
+library(dplyr)
+library(dbplyr)
+library(dplyr)
+library(odbc)
+library(RJSONIO)
+library(magrittr)
+library(RJSONIO)
+library(xts)
+library(quantmod)
+library(fTrading)
+library(curl)
+library(stringr)
+library(aws.s3)
+library(RPostgres)
+
+source("/home/data-science/data_science/util/util_functions.R")
+
+airdrop.claims <- QuerySnowflake("
+  SELECT 
+  event_inputs:recipient::string as user_address,
+  count(distinct(tx_hash)) AS n_claims,
+  sum(event_inputs:amount::numeric / pow(10,18)) as token_volume
+  from optimism.core.fact_event_logs
+  WHERE 
+  block_timestamp > '2022-05-30'
+  AND 
+  origin_function_signature = '0x2e7ba6ef' -- claim
+  AND 
+  contract_address = lower('0xFeDFAF1A10335448b7FA0268F56D2B44DBD357de') -- distr contract
+  AND
+  user_address NOT IN (
+   SELECT address 
+   FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS
+   WHERE blockchain = 'optimism')
+  GROUP BY user_address
+                                 ")
+cex.activity <- QuerySnowflake("
+  WITH wdraws AS (SELECT
+  to_address AS user_address,
+  tt.contract_address AS token_contract,
+  symbol AS token_symbol,
+  count(tt.tx_hash) AS n_withdrawals,
+  sum(raw_amount) / pow(10, decimals) AS wdraw_token_volume,
+  sum(raw_amount) / pow(10, decimals) * price AS wdraw_usd_volume
+  FROM
+  optimism.core.fact_token_transfers tt
+  JOIN optimism.core.FACT_HOURLY_TOKEN_PRICES pp 
+  ON date_trunc('hour', tt.block_timestamp) = pp.hour
+  AND tt.contract_address = pp.token_address
+  WHERE
+  from_address IN
+    (SELECT address 
+     FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS
+     WHERE blockchain = 'optimism' AND label_type = 'cex' AND label_subtype = 'hot_wallet')
+  AND
+    to_address NOT IN (
+     SELECT address 
+     FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS
+     WHERE blockchain != 'optimism')
+  GROUP BY user_address, token_contract, token_symbol, decimals, price),
+
+  deps AS (
+  SELECT
+  from_address AS user_address,
+  tt.contract_address AS token_contract,
+  symbol AS token_symbol,
+  count(tt.tx_hash) AS n_deposits,
+  sum(raw_amount) / pow(10, decimals) AS dep_token_volume,
+  sum(raw_amount) / pow(10, decimals) * price AS dep_usd_volume
+  FROM
+  optimism.core.fact_token_transfers tt
+  JOIN optimism.core.FACT_HOURLY_TOKEN_PRICES pp 
+  ON date_trunc('hour', tt.block_timestamp) = pp.hour
+  AND tt.contract_address = pp.token_address
+  WHERE
+  to_address IN
+    (SELECT address 
+     FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS
+     WHERE blockchain = 'optimism' AND label_type = 'cex' AND label_subtype = 'deposit_wallet')
+  AND
+    from_address NOT IN (
+     SELECT address 
+     FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS
+     WHERE blockchain != 'optimism')
+    GROUP BY user_address, token_contract, token_symbol, decimals, price
+     )
+  SELECT
+  COALESCE(ds.user_address, ws.user_address) AS user_address,
+  'tbd' AS exchange_name,
+  COALESCE(ds.token_contract, ws.token_contract) AS token_contract,
+  SPLIT_PART(COALESCE(ds.token_contract, ws.token_contract), '.', 2) AS token_symbol,
+  
+  COALESCE(n_deposits, 0) AS n_deposits,
+  COALESCE(n_withdrawals, 0) AS n_withdrawals,
+  
+  COALESCE(dep_token_volume, 0) AS dep_token_volume,
+  COALESCE(dep_usd_volume, 0) AS dep_usd_volume,
+  COALESCE(wdraw_token_volume, 0) AS wdraw_token_volume,
+  COALESCE(wdraw_usd_volume, 0) AS wdraw_usd_volume
+  
+  FROM deps ds
+  FULL OUTER JOIN wdraws ws ON ds.user_address = ws.user_address
+  AND ds.token_contract = ws.token_contract
+                               ")
+
+chain.stakes <- QuerySnowflake("
+  WITH format_delegations AS (
+select
+*,
+(raw_new_balance - raw_previous_balance) / pow(10, 18) AS net_delegation
+FROM optimism.core.fact_delegations
+WHERE 
+delegation_type != 'Re-Delegation'
+)
+SELECT
+delegator AS user_address,
+'0x4200000000000000000000000000000000000042' AS token_contract,
+'OP' AS token_symbol,
+count(distinct(tx_hash)) AS n_stakes,
+0 AS n_unstakes,
+sum(net_delegation) AS stake_token_volume,
+0 AS stake_usd_volume,
+0 AS unstake_token_volume,
+0 AS unstake_usd_volume
+FROM format_delegations
+WHERE
+delegator NOT IN (SELECT address FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS where blockchain = 'optimism')
+GROUP BY 
+delegator
+                               ")
+
+nft.trades <- QuerySnowflake("
+WITH sells AS (
+  SELECT
+  seller_address AS user_address,
+  platform_name AS marketplace,
+  nft_address AS nf_token_contract,
+  count(distinct(tokenid)) AS n_nfts_sold,
+  currency_symbol AS sell_symbol,
+  currency_address AS currency,
+  count(tx_hash) AS n_sells,
+  sum(price) AS token_sell_volume,
+  sum(price_usd) AS sell_usd_volume
+  FROM
+  optimism.core.ez_nft_sales ns
+  WHERE
+  user_address NOT IN (SELECT address FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS where blockchain = 'optimism')
+  GROUP BY 
+  seller_address, marketplace, nf_token_contract, sell_symbol, currency
+),
+buys AS (
+  SELECT
+  buyer_address AS user_address,
+  platform_name AS marketplace,
+  nft_address AS nf_token_contract,
+  count(distinct(tokenid)) AS n_nfts_bought,
+  currency_symbol AS buy_symbol,
+  currency_address AS currency,
+  count(tx_hash) AS n_buys,
+  sum(price) AS token_buy_volume,
+  sum(price_usd) AS buy_usd_volume
+  FROM
+  optimism.core.ez_nft_sales ns
+  WHERE
+  user_address NOT IN (SELECT address FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS where blockchain = 'optimism')
+  GROUP BY 
+  buyer_address, marketplace, nf_token_contract, buy_symbol, currency
+)
+
+SELECT
+COALESCE(sells.user_address, buys.user_address) AS user_address,
+COALESCE(sells.marketplace, buys.marketplace) AS marketplace,
+COALESCE(sells.nf_token_contract, buys.nf_token_contract) AS nf_token_contract,
+COALESCE(buys.n_nfts_bought, 0) AS n_nfts_bought,
+COALESCE(sells.n_nfts_sold, 0) AS n_nfts_sold,
+SPLIT_PART(COALESCE(sells.nf_token_contract, buys.nf_token_contract), '.', 2) AS nft_project,
+COALESCE(sells.currency, buys.currency) AS token_contract,
+COALESCE(sells.sell_symbol, buys.buy_symbol) AS token_symbol,
+COALESCE(n_buys, 0) AS n_buys,
+COALESCE(token_buy_volume, 0) AS buy_token_volume,
+COALESCE(buy_usd_volume, 0) AS buy_usd_volume,
+COALESCE(n_sells, 0) AS n_sells,
+COALESCE(token_sell_volume, 0) AS sell_token_volume,
+COALESCE(sell_usd_volume, 0) AS sell_usd_volume
+FROM sells
+FULL OUTER JOIN buys ON sells.user_address = buys.user_address
+AND sells.marketplace = buys.marketplace
+AND sells.nf_token_contract = buys.nf_token_contract
+AND sells.currency = buys.currency
+                             ")
+
+
+dex.swaps <- QuerySnowflake("
+
+WITH swaps AS (
+SELECT
+tx_hash,
+ORIGIN_FROM_ADDRESS AS user_address
+
+FROM
+OPTIMISM.CORE.FACT_EVENT_LOGS
+
+WHERE
+(lower(event_name) LIKE '%swap%'
+ OR
+ tx_hash IN (select tx_hash FROM OPTIMISM.VELODROME.EZ_SWAPS WHERE block_timestamp > current_date - 180) )
+AND
+ORIGIN_FROM_ADDRESS NOT IN (SELECT address FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS where blockchain = 'optimism')
+)
+
+SELECT
+user_address,
+count(distinct(tx_hash)) AS n_swaps
+FROM
+swaps
+GROUP BY 
+user_address
+                            ")
+
+op.metrics.w <- MergeDataFrames(
+  list(airdrop.claims[, list(user_address, airdrop_tokens_claimed = token_volume)],
+       cex.activity[, list(net_cex_wdraw = sum(wdraw_usd_volume) - sum(dep_usd_volume)), by = user_address],
+       chain.stakes[, list(user_address, n_delegations = n_stakes)],
+       nft.trades[, list(n_trades = sum(n_buys + n_sells)), by = user_address],
+       dex.swaps),
+  by = "user_address", all = TRUE
+)
+
+ReplaceValues(op.metrics.w)
+
+op.metrics.w[, airdrop_score := ifelse(airdrop_tokens_claimed > 0, 1, 0)]
+op.metrics.w[, cex_score := ifelse(net_cex_wdraw >= 0, 1, 0)]
+op.metrics.w[, delegation_score := ifelse(n_delegations > 0, 1, 0)]
+op.metrics.w[, nft_score := ifelse(n_trades > 0, 1, 0)]
+op.metrics.w[, dex_score := ifelse(n_swaps > 0, 1, 0)]
+
+op.metrics.w[, total_score := airdrop_score + 1 + delegation_score + nft_score + dex_score]
+
+op.metrics.w <- op.metrics.w[total_score > 0]
+
+save(op.metrics.w, file = "/rstudio-data/optimist_score_prototype_data.RData")
+print(file.info("/rstudio-data/optimist_score_prototype_data.RData"))
+
+```
+
+Done updating at `r Sys.time()`
+
+The end. Byeeeee. 

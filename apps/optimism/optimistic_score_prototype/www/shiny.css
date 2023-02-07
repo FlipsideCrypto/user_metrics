@@ -1,5 +1,5 @@
 body {
-  background: white;
+  background: url('Background_03.png');
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   font-weight: 400;
@@ -7,7 +7,11 @@ body {
 }
 
 a, a:hover, a:visited, a:active {
-  color: red;
+  color: #F60001;
+}
+
+a:hover {
+  color: #F6000195;
 }
 
 .container-fluid {
@@ -34,10 +38,18 @@ a, a:hover, a:visited, a:active {
   color: #F60001;
   font-size: 1.02em;
   padding: 8px;
-  background: linear-gradient(white, white) padding-box,
-              linear-gradient(to right, #F60001, #F60001) border-box;
   border-radius: 4px;
-  border: 3px solid transparent;
+  border: 3px solid #F60001;
+}
+
+#connect:hover {
+  background-color: #F60001;
+  color: white;
+}
+
+#connect:visited {
+  background-color: transparent;
+  color: #F60001;
 }
 
 .walletpart {
@@ -63,9 +75,9 @@ a, a:hover, a:visited, a:active {
   line-height: 50px;
   width: 20%;
   background-color: white;
-  border: 2px red solid;
+  border: 2px #F60001 solid;
   border-radius: 4px 0 0 4px;
-  color: red;
+  color: #F60001;
   text-align: center;
   font-family: Rubik;
   font-weight: 600;
@@ -77,9 +89,9 @@ a, a:hover, a:visited, a:active {
   height: 50px;
   line-height: 50px;
   width: 80%;
-  background-color: red;
+  background-color: #F60001;
   border-radius: 0 4px 4px 0;
-  border: 2px red solid;
+  border: 2px #F60001 solid;
   color: white;
   text-align: left;
   padding-left: 10px;
@@ -87,7 +99,7 @@ a, a:hover, a:visited, a:active {
 
 
 .scoreholder {
-  border: 2px solid red;
+  border: 2px solid #F60001;
   border-radius: 17px;
   padding: 10px 30px 0 37px;
   max-width: 630px;
@@ -120,7 +132,7 @@ a, a:hover, a:visited, a:active {
 }
 
 .scorecircle {
-  background-color: red;
+  background-color: #F60001;
   color: white;
   font-family: Rubik;
   font-size: 4em;
@@ -138,9 +150,9 @@ a, a:hover, a:visited, a:active {
 }
 
 button {
-  border: 1px red solid;
+  border: 1px #F60001 solid;
   padding: 5px;
-  color: red;
+  color: #F60001;
   background-color: white;
   margin: 10px;
   border-radius: 4px;
@@ -157,6 +169,8 @@ button {
   border-radius: 4px;
   border: 3px solid transparent;
 }
+
+
 
 .scorecolumns {
   padding-left: 30px;
@@ -179,7 +193,7 @@ button {
   border: 1px solid #F60001;
 }
 .modal-title {
-  color: red;
+  color: #F60001;
   font-weight: bold;
   border: none;
 }
@@ -194,9 +208,19 @@ button {
 
 
 .links {
-  color: red;
+  color: #F60001;
   font-size: 0.95em;
   text-align: center;
+}
+
+
+#tx_button > button:disabled {
+  background-color: #F6000197;  
+  cursor: not-allowed;
+}
+
+#tx_button > button:hover:enabled {
+  background-color: #CF0018
 }
 
 
