@@ -1,0 +1,27 @@
+Package: solAttestR
+Title: Enables Web3 Wallet Connection For Solana
+Version: 0.0.0.9000
+Authors@R: c(
+    person(
+        given = "Angela",
+        family = "Minster",
+        role = c("cre"),
+        email = "angela@flipsidecrypto.com",
+        comment = c(ORCID = "123456")
+    ),
+    person(
+        given="Kellen", 
+        family="Blumberg",
+        role = c("aut"),
+        email="kellen@flipsidecrypto.com"
+    ))
+Description: Enables Web3 Wallet Connection For Solana
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.1
+Imports: 
+    htmltools,
+    reactR,
+    shiny
