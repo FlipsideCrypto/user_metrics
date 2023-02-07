@@ -7,3 +7,4 @@
 *.txt
 secrets.json
 *.dcf
+.dcf
