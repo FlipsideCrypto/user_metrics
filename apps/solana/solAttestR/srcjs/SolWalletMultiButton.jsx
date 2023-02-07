@@ -17,6 +17,7 @@ export const SolWalletMultiButton = ({ children, setAddressForR, ...props }) => 
   const address2 = publicKey ? publicKey.toString() : '';
   useEffect(() => {
         address2 ? setAddressForR(address2) : null;
+        disconnect();
     }, [address2])
 
     const base58 = useMemo(() => publicKey?.toBase58(), [publicKey]);
