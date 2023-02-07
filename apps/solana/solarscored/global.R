@@ -1,5 +1,5 @@
 # lunatics
-# setwd('/Users/kellen/git/user_metrics/apps/solana/solarscored')
+setwd('/Users/kellen/git/user_metrics/apps/solana/solarscored')
 
 library(shiny)
 library(data.table)

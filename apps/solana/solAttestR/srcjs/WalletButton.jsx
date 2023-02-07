@@ -1,51 +1,46 @@
-import { useEffect } from "react";
-import { useConnect, useAccount, useDisconnect, useSwitchNetwork, useNetwork } from "wagmi";
+import { SolWalletMultiButton } from "./SolWalletMultiButton.jsx";
+import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
+import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
+import {
+  GlowWalletAdapter,
+  LedgerWalletAdapter,
+  PhantomWalletAdapter,
+  SlopeWalletAdapter,
+  SolflareWalletAdapter,
+  SolletExtensionWalletAdapter,
+  SolletWalletAdapter,
+  TorusWalletAdapter,
+} from '@solana/wallet-adapter-wallets';
+import { clusterApiUrl } from '@solana/web3.js';
+import React, { useMemo } from 'react';
 
-const WalletButton = ({ setAddress, chainId }) => {
-  const { address } = useAccount();
-  const { connect, connectors, isLoading, pendingConnector } = useConnect();
-  const { disconnect } = useDisconnect();
-  const { chain } = useNetwork();
-  const { switchNetwork } = useSwitchNetwork({
-    chainId: chainId ?? 10
-  });
+require('@solana/wallet-adapter-react-ui/styles.css');
+import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
+import SolWalletWrapper from "./SolWalletWrapper.jsx";
 
-  useEffect(() => {
-    setAddress(address ?? "");
-  }, [address])
+const WalletButton = ({ setAddressForR }) => {
 
-  return (
-    <div>
-      {/* {address ? 
-        <>
-          {chain?.id === chainId ?
-            <button onClick={() => disconnect()}>
-              Disconnect1
-            </button>
-            :
-            <button onClick={() => switchNetwork()}>
-              Switch Network1
-            </button>
-          }
-        </>
-        :
-        <>
-          {connectors.map((connector) => (
-            <button
-              disabled={!connector.ready}
-              key={connector.id}
-              onClick={() => connect({ connector })}
-            >1
-              {connector.name}
-              {isLoading &&
-                pendingConnector?.id === connector.id &&
-                ' (connecting)'}
-            </button>
-          ))}
-        </>
-      } */}
-      Wallet Button
-    </div>
+  const solNetwork = WalletAdapterNetwork.Mainnet;
+  const endpoint = useMemo(() => clusterApiUrl(solNetwork), [solNetwork]);
+
+  const wallets = [
+    new PhantomWalletAdapter(),
+    new GlowWalletAdapter(),
+    new SlopeWalletAdapter(),
+    new SolflareWalletAdapter({ solNetwork }),
+    new TorusWalletAdapter(),
+    new LedgerWalletAdapter(),
+    new SolletExtensionWalletAdapter(),
+    new SolletWalletAdapter(),
+];
+
+
+return (
+  <SolWalletWrapper>
+
+          <SolWalletMultiButton setAddressForR={setAddressForR} />
+    </SolWalletWrapper>
+
   )
 };
 

@@ -79,13 +79,13 @@ function(input, output, session) {
 		)
 	}
 	observeEvent(input$wallet_address, {
-		print('input$wallet_address')
+		print('observeEvent input$wallet_address')
 		print(input$wallet_address)
 	})
 
 	output$your_address <- renderText({
 		val <- 'Wallet not connected'
-		print('input$wallet_address')
+		print('output$your_address input$wallet_address')
 		print(input$wallet_address)
 		if (!is.blank(input$wallet_address)) {
 			val <- paste0('Your address is ', input$wallet_address)
