@@ -7,6 +7,8 @@ library(shinyjs)
 #install_github("dreamRs/capture")
 library(capture)
 library(shinyBS)
+library(dplyr)
+library(solAttestR)
 library(shinycssloaders)
 # install_github("flipsidecrypto/user_metrics/apps/solana/solAttestR")
 library(solAttestR)
@@ -15,14 +17,15 @@ wheel.colors <- c("#30CFCF", "#A682EE", "#23D1BA", "#9764E8", "#3EAFE0", "#8880E
 
 svgdata <- readLines("wheel.svg")
 
-
 user <- Sys.info()[['user']]
 isRstudio <- user == 'rstudio-connect'
-if(isRstudio) {
-  load('/rstudio-data/solarscored_data.RData')
-} else {
-  load("solarscored_data.RData")
-}
+baseDir <- ifelse(isRstudio, '/rstudio-data/solarscored_data.RData', './')
+file.location <- paste0(baseDir, 'solarscored_data.RData')
+load(file.location)
+# print(exists("score.criteria"))
+score_criteria <- read.csv(
+    paste0(baseDir, 'score_criteria.csv')
+  ) %>% as.data.table()
 
 bar.plot.colors <- c("#14F195", "#B2FBDC")
 
