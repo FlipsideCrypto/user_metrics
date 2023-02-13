@@ -11,9 +11,10 @@ fluidPage(
     tags$link(rel = "stylesheet", type = "text/css", href = "shiny.css"),
     tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css?family=Orbitron"),
     tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css?family=Exo+2"),
-    tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css?family=Roboto+Mono"),
+    #tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css?family=Roboto+Mono"),
+    tags$script(src = "rudderstack.js"),
     tags$link(rel = "icon", href = "flipside.svg")
-    ),
+  ),
   
   useShinyjs(),
   chooseSliderSkin("Round"),
@@ -47,14 +48,18 @@ fluidPage(
                                 placement = "bottom", trigger = "hover")
                       
                   ))),
+  
   fluidRow(class = "appbody",
            
            fluidRow(class = "dashmid",
                     column(7, 
                            div(class = "addybuttons",
-                               uiOutput("useraddy"),
-                               actionButton(inputId = "randomaddy", label = img(src = "random.svg", height = "26")),
-                           ),
+                               #uiOutput("useraddy"),
+                               div(id = "sourceaddress", "SOURCE ADDRESS:"),
+                               SolWalletHandler("sol_address")
+                               ),
+                           #actionButton(inputId = "randomaddy", label = img(src = "random.svg", height = "26")),
+                           
                            
                            div(id = "wheelpart", 
                                uiOutput("svgout") %>% 

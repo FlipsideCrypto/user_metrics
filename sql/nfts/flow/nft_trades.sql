@@ -32,7 +32,7 @@ sells AS (
   LEFT JOIN daily_prices dp ON date_trunc('day', ns.block_timestamp) = dp.day
       AND ns.currency = dp.token_contract
   WHERE
-  block_timestamp > current_date - 180
+  block_timestamp > current_date - 91
   GROUP BY 
   seller, marketplace, nf_token_contract, sell_symbol, currency
 ),
@@ -56,7 +56,7 @@ buys AS (
   LEFT JOIN daily_prices dp ON date_trunc('day', ns.block_timestamp) = dp.day
       AND ns.currency = dp.token_contract
   WHERE
-  block_timestamp > current_date - 180
+  block_timestamp > current_date - 91
   GROUP BY 
   buyer, marketplace, nf_token_contract, buy_symbol, currency
 )

@@ -1,9 +1,12 @@
 function(input, output, session) {
   
-  output$useraddy <- renderUI({
-    textInput("addy", "SOURCE ADDRESS:", 
-              placeholder = "paste in an address or click random")
-  })
+  connected.addy <- reactiveValues(addy = "connect wallet")
+  
+  #observeEvent("sol_address")
+  
+  # output$useraddy <- renderUI({
+  #   textInput("addy", "SOURCE ADDRESS:", value = connected.addy$addy)
+  # })
   
   
   userRecord <- reactive({
@@ -11,7 +14,7 @@ function(input, output, session) {
       
       if(nchar(input$addy) > 0) {
         
-        df[user_address == input$addy] 
+        df[user_address == input$addy]
         
       } else {
         empty.df
@@ -19,11 +22,28 @@ function(input, output, session) {
     } else {
       empty.df
     }
-    
-    
   })
   
-  
+  observeEvent(input$sol_address, {
+    print(input$sol_address)
+    if(input$sol_address != "") {
+      
+      connected.addy$addy <- input$sol_address
+      
+      # updateActionButton(session = session, inputId = "connect", 
+      #                    label = paste0("connected as ", substr(input$sol_address, 1, 7), "..."),
+      #                    icon = character(0))
+      # tmp <- data.table(address = input$sol_address,
+      #                   time = Sys.time(),
+      #                   score = userScore())
+      # write.csv(tmp, file = paste0("/rstudio-data/optimistic-data/", input$eth_address, "_", Sys.time(), ".csv"), row.names = FALSE)
+      
+    } else {
+      
+      # updateActionButton(session = session, inputId = "connect", 
+      #                    icon = icon("wallet"), label = "  Connect Wallet")
+    }
+  })
   
   svgColored <- reactive({
     
@@ -31,7 +51,7 @@ function(input, output, session) {
     
     if(!is.null(input$addy)) {
       
-      if(nchar(input$addy) > 0) {
+      if(nchar(input$addy) > 0 & input$addy != "connect wallet") {
         
         new.style <- c()
         

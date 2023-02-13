@@ -1,109 +1,58 @@
 function(input, output, session) {
   
-  output$inputaddy <- renderUI({
-    textInput(inputId = "addy", label = "Enter Your Address", value = "0x9244cd25314edd34")
+  observeEvent(input$randomaddy, {
+    
+    new.addys <- dual.address.set[sample(1:nrow(dual.address.set), 1)]
+    
+    updateTextInput(session = session, "dapperaddy", value = new.addys$dapper)
+    updateTextInput(session, "bloctoaddy", value = new.addys$blocto)
+    
+  }, suspended = F)
+  
+  
+  output$dapperaddyO <- renderUI({
+    textInput(inputId = "dapperaddy", label = NULL, value = "0xc04f0af1dab0a999")
   })
   
-  
-  observeEvent(input$dapperconnect, {
-    showModal(modalDialog(
-      title = "Connect to Your Dapper Wallet",
-      "do you want to be Jack F, Jack F or Angeal?",
-      selectizeInput("dapperaddy", label = "NULL",
-                           choices = c("Jack F", "Other Jack F", "Angeal"), selected = input$dapperaddy)
-    ))
+  output$bloctoaddyO <- renderUI({
+    textInput(inputId = "bloctoaddy", label = NULL, value = "0x52eceb884aa542c6")
   })
   
-  #https://community.rstudio.com/t/persistent-selected-values-using-modal-selectinput/7160/2
-  observeEvent(input$bloctoconnect, {
-    showModal(modalDialog(
-      title = "Connect to Your Blocto Wallet",
-      "coming soon..."
-      ))
+  userData <- reactive({
+    user.stats[user_address %in% c(input$dapperaddy, input$bloctoaddy)]
   })
   
+  ripScore <- reactive(c(0, 1,2,3)[max(which(sum(userData()$n_rips) >= c(0, 1,5,10)))])
+  listingScore <- reactive(c(0, 1,2,3)[max(which(sum(userData()$n_listings) >= c(0, 1,5,10)))])
+  dapperBuysScore <- reactive(c(0, 1,2,3)[max(which(sum(userData()$n_nft_buys_dapper) >= c(0, 1,5,10)))])
+  nonDapperTradesScore <- reactive(c(0, 1)[max(which(sum(userData()$n_nft_trades_nd) >= c(0, 1)))])
+  stakesScore <- reactive( c(0, 1)[max(which(sum(userData()$n_stakes) >= c(0, 1)))])
+  swapsScore <- reactive(c(0, 1)[max(which(sum(userData()$n_swaps) >= c(0, 1)))])
+  totalScore <- reactive(ripScore() + listingScore() + dapperBuysScore() + nonDapperTradesScore() + stakesScore() + swapsScore())
   
-  jackf1 <- c("0x69a1f5cefd1e0fdf", "0xcf3ead0e195bdd0f")
-  angeal <- c("0xc04f0af1dab0a999", "0x52eceb884aa542c6")
-  jackf2 <- c("0xcc17b1ed3d9b079c", "0x60787d9233b782ad")
   
-  userAddys <- reactive({
-    if(input$dapperaddy == "Jack F") {
-      jackf1
-    } else if(input$dapperaddy == "Other Jack F") {
-      jackf2
-    } else {
-      angeal
-    }
-  })
+  output$totalscore <- renderText(totalScore())
   
-  n.users <- nrow(flowscored.metrics.w)
   
-  thisUser_nft_n_trades <- reactive( sum(flowscored.metrics.w[user_address %in% userAddys()]$nft_n_trades) )
-  output$nft_n_trades <- renderText(thisUser_nft_n_trades())
-  output$nft_n_trades_p <- renderText(round(nrow(flowscored.metrics.w[nft_n_trades < thisUser_nft_n_trades()])/n.users, 2))
+  output$dapper1 <- renderText(ripScore())
+  output$dapper1text <- renderText(paste0(sum(userData()$n_rips), " pack rips"))
   
-  thisUser_days_since_last_tx <- reactive( sum(flowscored.metrics.w[user_address %in% userAddys()]$days_since_last_tx) )
-  output$days_since_last_tx <- renderText(thisUser_days_since_last_tx())
-  output$days_since_last_tx_p <- renderText(round(nrow(flowscored.metrics.w[days_since_last_tx < thisUser_days_since_last_tx()])/n.users, 2))
+  output$dapper2 <- renderText(listingScore())
+  output$dapper2text <- renderText(paste0(sum(userData()$n_listings), " listings"))
   
-  thisUser_nft_n_projects <- reactive( sum(flowscored.metrics.w[user_address %in% userAddys()]$nft_n_projects) )
-  output$nft_n_projects <- renderText(thisUser_nft_n_projects())
-  output$nft_n_projects_p <- renderText(round(nrow(flowscored.metrics.w[nft_n_projects < thisUser_nft_n_projects()])/n.users, 2))
+  output$dapper3 <- renderText(dapperBuysScore())
+  output$dapper3text <- renderText(paste0(sum(userData()$n_nft_buys_dapper), " marketplace buys"))
   
-  thisUser_nft_n_listings <- reactive( sum(flowscored.metrics.w[user_address %in% userAddys()]$nft_n_listings) )
-  output$nft_n_listings <- renderText(thisUser_nft_n_listings())
-  output$nft_n_listings_p <- renderText(round(nrow(flowscored.metrics.w[nft_n_listings < thisUser_nft_n_listings()])/n.users, 2))
+  output$bonus1 <- renderText(nonDapperTradesScore())
+  output$bonus1text <- renderText(paste0(sum(userData()$n_nft_trades_nd), " non-Dapper NFT trades"))
+  
+  output$bonus2 <- renderText(stakesScore())
+  output$bonus2text <- renderText(paste0(sum(userData()$n_stakes), " FLOW stakes"))
+  
+  output$bonus3 <- renderText(swapsScore())
+  output$bonus3text <- renderText(paste0(sum(userData()$n_swaps), " dex swaps"))
   
   
   
-  output$action_listed_nft <- renderText({
-    if( sum(flowscored.metrics.w[user_address %in% userAddys()]$list_nft) > 0 ) {
-      "🏆"
-    } else {
-      "❌"
-    }
-  })
-  
-  output$action_bought_nfts <- renderText({
-    if( sum(flowscored.metrics.w[user_address %in% userAddys()]$list_nft) > 0 ) {
-      "🏆"
-    } else {
-      "❌"
-    }
-  })
-
-  output$action_staked_flow <- renderText({
-    if( sum(flowscored.metrics.w[user_address %in% userAddys()]$staked_flow) > 0 ) {
-      "🏆"
-    } else {
-      "❌"
-    }
-  })
-
-  output$action_dex_swap <- renderText({
-    if( sum(flowscored.metrics.w[user_address %in% userAddys()]$dex_swapper) > 0 ) {
-      "🏆"
-    } else {
-      "❌"
-    }
-  })
-
-  # output$award_positive_trader <- renderText({
-  #   if(flowscored.metrics.w[user_address %in% userAddys()]$positive_trader) {
-  #     "🏆"
-  #   } else {
-  #     "❌"
-  #   }
-  # })
-  # 
-  # output$badge_topshot_trader <- renderText({
-  #   if(flowscored.metrics.w[user_address %in% userAddys()]$top_topshot_trader == 1) {
-  #     "🏆"
-  #   } else {
-  #     "❌"
-  #   }
-  # })
-  # 
   
 }

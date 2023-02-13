@@ -4,9 +4,12 @@ library(stringr)
 library(shinyWidgets)
 library(plotly)
 library(shinyjs)
+#install_github("dreamRs/capture")
 library(capture)
 library(shinyBS)
 library(shinycssloaders)
+# install_github("flipsidecrypto/user_metrics/apps/solana/solAttestR")
+library(solAttestR)
 
 wheel.colors <- c("#30CFCF", "#A682EE", "#23D1BA", "#9764E8", "#3EAFE0", "#8880E5", "#26D994")
 

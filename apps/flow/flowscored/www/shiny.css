@@ -1,40 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap');
+
 body {
-  background-color: #10151A;
+  background-color: white;
   padding-left: 10%;
   padding-right: 10%;
-  color: #919EAB;
-  font-family: 'Inter';
+  color: black;
+  font-family: Epilogue, sans-serif;
   font-size: 18px;
-  font-weight: 400;
+  letter-spacing: -.03em;
 }
 
-hr {
-  background: #10151A;
-  opacity: 0.5;
-  border: 1px solid #637381;
-  width: 95%;
+.bold-title {
+  font-size: 40px;
+  line-height: 1.1em;
+  font-weight: 600;
+  letter-spacing: -.04em;
 }
 
 .container-fluid {
-  background-color: black;
   max-width: 700px;
   margin: 0 auto;
   height: 100%;
-  padding-top: 52px;
   padding-left: 0;
   padding-right: 0;
 }
 
-.wrapper {
-  border-radius: 16px;
-  background-color: transparent;
-  margin-top: -5%;
-  padding-bottom: 3%;
-  padding-right: 5%;
-  padding-left: 5%;
-  margin-bottom: 30px;
+/* upper right icon links */
+#icons {
+  display: flex;
+  padding-top: 10px;
+  padding-left: 30px;
 }
 
-.actions {
-  display: flex;
+.aboutlinks {
+  padding-left: 20px;
+  padding-bottom: 15px;
 }
+
+.scoreholder {
+  position: relative;
+  text-align: center;
+  color: black;
+}
+
+.title {
+  font-weight: 900;
+  font-size: 1.1em;
+}
+
+.centered {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.scoretitle {
+  font-size: 1.2em;
+  font-weight: 600;
+}
+.score {
+  font-size: 3em; 
+  font-weight: 900;
+}
+.scoresubtitle {
+  font-size: 0.9em;
+  min-height: 50px;
+}
+
+
