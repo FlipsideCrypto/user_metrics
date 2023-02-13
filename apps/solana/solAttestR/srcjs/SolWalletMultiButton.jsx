@@ -1,7 +1,6 @@
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useWalletModal } from '@solana/wallet-adapter-react-ui';
-import { WalletModalButton } from '@solana/wallet-adapter-react-ui';
-import { WalletConnectButton } from '@solana/wallet-adapter-react-ui';
+import { WalletModalButton, WalletConnectButton, WalletIcon } from '@solana/wallet-adapter-react-ui';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 require('@solana/wallet-adapter-react-ui/styles.css');
@@ -14,10 +13,9 @@ export const SolWalletMultiButton = ({ children, setAddressForR, ...props }) => 
     // const ref = useRef<HTMLUListElement>(null);
     const ref = useRef(null);
 
-  const address2 = publicKey ? publicKey.toString() : '';
-  useEffect(() => {
+    const address2 = publicKey ? publicKey.toString() : '';
+    useEffect(() => {
         address2 ? setAddressForR(address2) : null;
-        disconnect();
     }, [address2])
 
     const base58 = useMemo(() => publicKey?.toBase58(), [publicKey]);
@@ -83,7 +81,8 @@ export const SolWalletMultiButton = ({ children, setAddressForR, ...props }) => 
             <button
                 onClick={openDropdown}
                 className="wallet-adapter-button  wallet-adapter-button-trigger"
-                >
+                startIcon={<WalletIcon wallet={wallet} />}
+            >
                 {content}
             </button>
             <ul

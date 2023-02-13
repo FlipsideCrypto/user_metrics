@@ -7,7 +7,7 @@ library(rjson)
 
 ui <- fluidPage(
   titlePanel("reactR Input Example2"),
-  SolWalletHandler("eth_address", chainId = 10),
+  SolWalletHandler("eth_address"),
 )
 server <- function(input, output, session) {
   observeEvent(input$eth_address, {
