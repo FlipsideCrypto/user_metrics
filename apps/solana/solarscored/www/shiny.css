@@ -248,6 +248,7 @@ These are the ticks and text of the sliders
   width: 100%;
   font-size: 1.25em;
   background: -webkit-linear-gradient(#9945FF, #14F195);
+  cursor: help;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -275,6 +276,10 @@ These are the ticks and text of the sliders
   background: -webkit-linear-gradient(#9945FF, #14F195);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.userscore {
+  cursor: help;
 }
 
 .yourscore {
@@ -334,13 +339,18 @@ These are the ticks and text of the sliders
   margin-top: 200px;
 }
 
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 768px) {
   body {
-    width: fit-content;
+    width: 100vw;
+    position: absolute;
+    overflow-x: hidden;
+    margin: 0;
   }
+  
   .container-fluid {
     width: unset;
   }
+
   .title {
     display: flex;
   }
@@ -356,5 +366,27 @@ These are the ticks and text of the sliders
   }
   .addybuttons {
     margin-top: 20px;
+    padding-inline: 0px;
+    display: flex;
+  }
+
+  .useraddy {
+    flex-grow: 2;
+  }
+
+  .useraddy .form-group {
+    width: auto;
+  }
+
+  .svgout {
+    display: contents;
+  }
+
+  .row {
+    margin-inline: 0;
+  }
+
+  #wheelpart {
+    margin-inline: -15px;
   }
 }
