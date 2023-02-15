@@ -83,6 +83,7 @@ a[title]:hover::after {
   border-radius: 8px;
   margin-top: auto;
   color: black;
+  transition: background-color .15s ease-in-out;
 }
 
 .btn-default:hover {
@@ -258,6 +259,7 @@ These are the ticks and text of the sliders
   width: 100%;
   font-size: .8em;
   padding-bottom: 10px;
+  cursor: help;
 }
 
 #bdnldscores, #dnldscores {
@@ -282,6 +284,7 @@ These are the ticks and text of the sliders
   width: 100%;
   font-size: 1.1em;
   padding-bottom: 10px;
+  cursor: help;
 }
 
 .boxtitle {
@@ -331,12 +334,27 @@ These are the ticks and text of the sliders
   margin-top: 200px;
 }
 
-
-
-
-
-
-
-
-
-
+@media only screen and (max-width: 600px) {
+  body {
+    width: fit-content;
+  }
+  .container-fluid {
+    width: unset;
+  }
+  .title {
+    display: flex;
+  }
+  .title img {
+    width: 380px;
+    margin: auto;
+    margin-block: 20px;
+  }
+  #icons {
+    display: flex;
+    padding-left: 0;
+    justify-content: space-evenly;
+  }
+  .addybuttons {
+    margin-top: 20px;
+  }
+}

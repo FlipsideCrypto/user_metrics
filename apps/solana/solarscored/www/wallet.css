@@ -13,10 +13,8 @@
   line-height: 14px;
   border-radius: 8px;
   padding: 22px;
-}
-
-.wallet-adapter-button:hover {
-  
+  white-space: nowrap;
+  transition: background-color .15s ease-in-out;
 }
 
 .wallet-adapter-button-trigger {
@@ -28,7 +26,7 @@
 }
 
 .wallet-adapter-button:not([disabled]):hover {
-  background-color: #E2E4F7;
+  background-color: #cfd1e3;
 }
 
 .wallet-adapter-button[disabled] {
@@ -108,10 +106,11 @@
   font-weight: 600;
   height: 37px;
   color: black;
+  transition: background-color .15s ease-in-out;
 }
 
 .wallet-adapter-dropdown-list-item:not([disabled]):hover {
-  background-color: #E2E4F7;
+  background-color: #cfd1e3;
 }
 
 .wallet-adapter-modal-collapse-button svg {
