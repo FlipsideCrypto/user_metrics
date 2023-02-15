@@ -33,7 +33,7 @@ fluidPage(
                       bsTooltip(id = "fork", 
                                 title = "Fork this App",
                                 placement = "bottom", trigger = "hover"),
-                      div(class = "aboutlinks", 
+                      div(class = "aboutlinks flippylink", 
                           a(id = "flippy",
                             href = "https://flipsidecrypto.xyz/",
                             img(src = "flipside.svg", width = "35px"),
