@@ -46,14 +46,15 @@ contract FlipsideAttestation {
     }
 
     /**
-     * @notice Verifies the attestation data before calling the OP AttestationStation attest.
+     * @notice Allows a user to create an attestation from Flipside and 
+     *         send it to the Attestation Station.
      * @param _about The address of the account to be attested.
      * @param _key The key of the attestation.
      * @param _val The value of the attestation.
      * @param _signature The signature of the attestation.
      * 
      * Requirements:
-     * - The caller must be the current signer.
+     * - The signature must resolve to the signer.
      */
     function attest(
           address _about
@@ -81,7 +82,7 @@ contract FlipsideAttestation {
     }
 
     /**
-     * @notice Allows the signer to change the AttestationStation implementation.
+     * @notice Verifies that the signature is coming from the signer.
      * @param _about The address of the account to be attested.
      * @param _key The key of the attestation.
      * @param _val The value of the attestation.
