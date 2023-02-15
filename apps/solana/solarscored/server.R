@@ -13,8 +13,12 @@ function(input, output, session) {
     if(!is.null(input$addy)) {
       
       if(nchar(input$addy) > 0) {
-        
-        df[user_address == input$addy]
+        tmp <- df[user_address == input$addy]
+        if(nrow(tmp) > 0) {
+          tmp
+        } else {
+          empty.df
+        }
         
       } else {
         empty.df
