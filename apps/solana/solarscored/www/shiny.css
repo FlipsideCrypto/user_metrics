@@ -339,6 +339,10 @@ These are the ticks and text of the sliders
   margin-top: 200px;
 }
 
+#svgout {
+  display: contents;
+}
+
 @media only screen and (max-width: 768px) {
   body {
     width: 100vw;
@@ -378,9 +382,7 @@ These are the ticks and text of the sliders
     width: auto;
   }
 
-  .svgout {
-    display: contents;
-  }
+  
 
   .row {
     margin-inline: 0;
