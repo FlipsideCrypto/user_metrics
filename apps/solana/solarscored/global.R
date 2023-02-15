@@ -19,13 +19,13 @@ svgdata <- readLines("wheel.svg")
 
 user <- Sys.info()[['user']]
 isRstudio <- user == 'rstudio-connect'
-baseDir <- ifelse(isRstudio, '/rstudio-data/solarscored_data.RData', './')
-file.location <- paste0(baseDir, 'solarscored_data.RData')
+file.location <- ifelse(
+  isRstudio
+  , '/rstudio-data/solarscored_data.RData'
+  , '~/user_metrics/apps/solana/solarscored/solarscored_data.RData'
+)
+
 load(file.location)
-# print(exists("score.criteria"))
-score_criteria <- read.csv(
-    paste0(baseDir, 'score_criteria.csv')
-  ) %>% as.data.table()
 
 bar.plot.colors <- c("#14F195", "#B2FBDC")
 

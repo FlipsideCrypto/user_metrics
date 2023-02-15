@@ -24,6 +24,11 @@ a[title]:hover::after {
   color: orange;
 }
 
+#sol_address {
+  margin-left: 20px;
+  
+}
+
 .container-fluid {
   width: 80%;
   max-width: 1200px;
@@ -47,76 +52,31 @@ a[title]:hover::after {
   margin-top: 10px;
 }
 
-/* centering the address input + buttons 
+/* centering the address input + buttons */
+
 .addybuttons {
   display: flex;
   margin: auto;
   align-items: baseline;
   vertical-align: bottom;
-  justify-content: center;
-}
-*/
-
-.addybuttons {
+  justify-content: left;
   font-family: 'Exo 2';
   font-weight: 500;
-  border: solid #E2E4F7 2px;
-  border-radius: 8px;
-  background-color: white;
   color: #56575E;
-  margin-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 20px;
 }
 
-#sourceaddress {
-  font-family: 'Orbitron';
-  font-size: 13.6px;
-  font-weight: 700;
-  padding-left: 5px;
-}
 
-#useraddy label { 
-  font-family: 'Orbitron';
-  font-size: 13.6px;
-}
-
-#useraddy {
-  min-width: 400px;
-}
 
 #addy {
   border: solid #E2E4F7 2px;
   border-radius: 8px;
-  min-width: 400px;
-}
-
-#sol_address {
-  font-family: 'Orbitron';
-  font-size: 13.6px;
-  color: black;
-  text-transform: capitalize;
-  min-width: 400px;
-}
-
-#sol_address:hover {
-  background-color: #E2E4F7;
-}
-
-.wallet-adapter-button-trigger {
-  font-family: 'Exo 2';
-  font-weight: 500;
-  border: solid #E2E4F7 2px;
-  border-radius: 8px;
   background-color: white;
-  color: #56575E;
-  text-transform: capitalize;
-  max-height: 42px;
-  line-height: 14px;
-  min-width: 400px;
+  
 }
 
-.wallet-adapter-button-trigger:hover {
-  background-color: #E2E4F7;
-}
+
 
 .btn-default, .btn-default:focus {
   border: solid #E2E4F7 2px;
@@ -164,7 +124,7 @@ a[title]:hover::after {
   background-color: #ffffff99;
   padding-top: 15px;
   padding-bottom: 10px;
-  margin-top: 10px;
+  margin-top: 28px;
 }
 #botrightbox {
   border: 2px #E2E4F7 solid;
@@ -326,12 +286,12 @@ These are the ticks and text of the sliders
 
 .boxtitle {
   text-align: center;
-  font-size: 1em;
   font-family: Orbitron;
   margin-bottom: 10px;
 }
 
 .aboutlinks {
+  margin-top: 6px;
   padding-left: 20px;
   padding-bottom: 15px;
 }
@@ -370,3 +330,13 @@ These are the ticks and text of the sliders
 .load-container {
   margin-top: 200px;
 }
+
+
+
+
+
+
+
+
+
+

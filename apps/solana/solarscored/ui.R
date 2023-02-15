@@ -9,6 +9,7 @@
 fluidPage(
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "shiny.css"),
+    tags$link(rel = "stylesheet", type = "text/css", href = "wallet.css"),
     tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css?family=Orbitron"),
     tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css?family=Exo+2"),
     #tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css?family=Roboto+Mono"),
@@ -20,32 +21,36 @@ fluidPage(
   chooseSliderSkin("Round"),
   
   fluidRow(class = "titlerow", 
-           column(9, class = "title", img(src = "solarscored-logo.svg", width = '480px')),
-           column(3,
+           column(8, class = "title", img(src = "solarscored-logo.svg", width = '480px')),
+           column(4,
                   div(id = "icons",
                       div(class = "aboutlinks", 
                           a(id = 'fork', 
                             href = "https://github.com/FlipsideCrypto/user_metrics/tree/main/apps/solana/solarscored",
-                            img(src = "github.svg", width = "30px"),
+                            img(src = "github.svg", width = "35px"),
+                            onclick = "rudderstack.track('solarscored-click-github')",
                             target = "_blank")),
                       bsTooltip(id = "fork", 
                                 title = "Fork this App",
                                 placement = "bottom", trigger = "hover"),
                       div(class = "aboutlinks", 
                           a(id = "flippy",
-                            href = "https://next.flipsidecrypto.xyz/",
-                            img(src = "flipside.svg", width = "30px"),
+                            href = "https://flipsidecrypto.xyz/",
+                            img(src = "flipside.svg", width = "35px"),
+                            onclick = "rudderstack.track('solarscored-click-flipside')",
                             target = "_blank")),
                       bsTooltip(id = "flippy", 
                                 title = "Get the Data",
                                 placement = "bottom", trigger = "hover"),
                       div(class = "aboutlinks", 
                           a(id = "solana", href = "https://solana.com",
-                            img(src = "solana.svg", width = "30px"),
+                            img(src = "solana.svg", width = "35px"),
+                            onclick = "rudderstack.track('solarscored-click-solana')",
                             target = "_blank")),
                       bsTooltip(id = "solana", 
                                 title = "Solana",
-                                placement = "bottom", trigger = "hover")
+                                placement = "bottom", trigger = "hover"),
+                      SolWalletHandler("sol_address")
                       
                   ))),
   
@@ -53,13 +58,12 @@ fluidPage(
            
            fluidRow(class = "dashmid",
                     column(7, 
-                           div(class = "addybuttons",
-                               #uiOutput("useraddy"),
-                               div(id = "sourceaddress", "SOURCE ADDRESS:"),
-                               SolWalletHandler("sol_address")
-                               ),
-                           #actionButton(inputId = "randomaddy", label = img(src = "random.svg", height = "26")),
-                           
+                           div(class = "addybuttons", 
+                           uiOutput("useraddy"),
+                           actionButton(inputId = "randomaddy", label = img(src = "random.svg", height = "26"))),
+                           bsTooltip(id = "randomaddy", 
+                                     title = "show a random address",
+                                     placement = "bottom", trigger = "hover"),
                            
                            div(id = "wheelpart", 
                                uiOutput("svgout") %>% 
@@ -71,6 +75,7 @@ fluidPage(
                                options = list(bgcolor = "#FFF"),
                                #scale = 2,
                                img(src = "camera.svg", height = "20"),
+                               onclick = "rudderstack.track('solarscored-camera')",
                                title = "Download the Circle")),
                            bsTooltip(id = "pic", 
                                      title = "Download the Wheel",
@@ -150,7 +155,8 @@ fluidPage(
                                div(id = "sliderbox",
                                    plotlyOutput("scorehist", height = "100px"),
                                    uiOutput("outputslider"),
-                                   uiOutput("bdnldscores")))
+                                   a(uiOutput("bdnldscores"), onclick = "rudderstack.track('solarscored-click-solana')")
+                                   ))
                            
                     ) #close left column box
                     

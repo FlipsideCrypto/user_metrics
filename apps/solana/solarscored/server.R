@@ -4,10 +4,10 @@ function(input, output, session) {
   
   #observeEvent("sol_address")
   
-  # output$useraddy <- renderUI({
-  #   textInput("addy", "SOURCE ADDRESS:", value = connected.addy$addy)
-  # })
-  
+  output$useraddy <- renderUI({
+    textInput("addy", label = "SOURCE ADDRESS", value = connected.addy$addy, width = "400px")
+  })
+
   
   userRecord <- reactive({
     if(!is.null(input$addy)) {
@@ -30,13 +30,10 @@ function(input, output, session) {
       
       connected.addy$addy <- input$sol_address
       
-      # updateActionButton(session = session, inputId = "connect", 
-      #                    label = paste0("connected as ", substr(input$sol_address, 1, 7), "..."),
-      #                    icon = character(0))
-      # tmp <- data.table(address = input$sol_address,
-      #                   time = Sys.time(),
-      #                   score = userScore())
-      # write.csv(tmp, file = paste0("/rstudio-data/optimistic-data/", input$eth_address, "_", Sys.time(), ".csv"), row.names = FALSE)
+      tmp <- data.table(address = input$sol_address,
+                        time = Sys.time(),
+                        score = userRecord()$total_score)
+      write.csv(tmp, file = paste0("/rstudio-data/solarscored-data/", input$sol_address, "_", Sys.time(), ".csv"), row.names = FALSE)
       
     } else {
       
