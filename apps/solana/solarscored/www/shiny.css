@@ -304,6 +304,10 @@ These are the ticks and text of the sliders
   padding-bottom: 15px;
 }
 
+.aboutlinks .flippylink {
+  margin-top: 4px;
+}
+
 .metricrow {
   margin: 5px;
   display: flex;
@@ -357,6 +361,7 @@ These are the ticks and text of the sliders
 
   .title {
     display: flex;
+    padding-inline: 0;
   }
   .title img {
     width: 380px;
@@ -366,23 +371,31 @@ These are the ticks and text of the sliders
   #icons {
     display: flex;
     padding-left: 0;
-    justify-content: space-evenly;
+    justify-content: space-between;
   }
+
+  .aboutlinks {
+    margin-top: 7px;
+    padding-inline: 10px;
+  }
+
   .addybuttons {
     margin-top: 20px;
     padding-inline: 0px;
     display: flex;
   }
 
-  .useraddy {
+  #useraddy {
     flex-grow: 2;
   }
 
-  .useraddy .form-group {
+  #useraddy .form-group {
     width: auto;
   }
 
-  
+  #randomaddy {
+    margin-right: 0;
+  }
 
   .row {
     margin-inline: 0;
@@ -390,5 +403,14 @@ These are the ticks and text of the sliders
 
   #wheelpart {
     margin-inline: -15px;
+  }
+
+  .col-sm-4,
+  .col-sm-8 {
+    padding-inline: 0;
+  }
+
+  .col-sm-7 {
+    padding-inline: 10px;
   }
 }
