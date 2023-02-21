@@ -64,7 +64,6 @@ sol.long.act[, longevity := sapply(longevity_value, long.func) ]
 sol.long.act[, activity := sapply(activity_value, activity.func) ]
 
 
-
 # GOVERNANCE 
 gov.query <- "
     SELECT voter AS user_address
@@ -86,6 +85,7 @@ gov.func <- function(x) {
     return(3)
 }
 sol.gov[, governance := sapply(governance_value, gov.func) ]
+
 
 
 # Bridgor - How many times are they bridging assets onto Solana (from a bridge or CEX)?
@@ -166,7 +166,6 @@ var.func <- function(x) {
     return(3)
 }
 sol.variety[, variety := sapply(variety_value, var.func) ]
-
 
 # nfts
 mints.query <- "
@@ -251,11 +250,75 @@ full.data <- full.data[bridge_value < 24*90]
 
 df <- full.data
 
+#get min max timestamp for all data:
+
+max.blocks <- QuerySnowflake(
+"
+SELECT 
+max(block_id) AS max_block,
+max(block_timestamp) AS max_time,
+'transactions' AS table_name
+FROM solana.core.fact_transactions
+
+UNION
+
+SELECT 
+max(block_id) AS max_block,
+max(block_timestamp) AS max_time,
+'proposal_votes' AS table_name
+FROM solana.core.fact_proposal_votes
+
+UNION
+
+SELECT 
+max(block_id) AS max_block,
+max(block_timestamp) AS max_time,
+'events' AS table_name
+FROM solana.core.fact_events
+
+UNION
+
+SELECT 
+max(block_id) AS max_block,
+max(block_timestamp) AS max_time,
+'transfers' AS table_name
+FROM solana.core.fact_transfers
+
+UNION
+
+SELECT 
+max(block_id) AS max_block,
+max(block_timestamp) AS max_time,
+'staking_lp_actions' AS table_name
+FROM solana.core.ez_staking_lp_actions
+
+UNION
+
+SELECT 
+max(block_id) AS max_block,
+max(block_timestamp) AS max_time,
+'nft_mints' AS table_name
+FROM solana.core.fact_nft_mints
+
+UNION
+
+SELECT 
+max(block_id) AS max_block,
+max(block_timestamp) AS max_time,
+'nft_sales' AS table_name
+FROM solana.core.fact_nft_sales
+")
+
+
+last.blocks <- paste0("Data is updated through ", min(max.blocks$max_time), 
+                      ", block number ", min(max.blocks$max_block))
+
+
 file.location <- ifelse(
     isRstudio
     , '/rstudio-data/solarscored_data.RData'
     , '~/user_metrics/apps/solana/solarscored/solarscored_data.RData'
 )
 
-save(df, file = file.location)
+save(df, last.blocks, file = file.location)
 
