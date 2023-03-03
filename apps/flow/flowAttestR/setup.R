@@ -1,0 +1,5 @@
+install.packages("languageserver",repos = "http://cran.us.r-project.org")
+install.packages("shiny",repos = "http://cran.us.r-project.org")
+install.packages("reactR",repos = "http://cran.us.r-project.org")
+install.packages("usethis",repos = "http://cran.us.r-project.org")
+install.packages("devtools",repos = "http://cran.us.r-project.org")
