@@ -4,7 +4,7 @@ library(dynamicWidget)
 
 ui <- fluidPage(
     titlePanel("dynamic test"),
-    dynamic_buttonInput("my_wallet", "")
+    dynamic_buttonInput("my_wallet")
 )
 
 # Define server logic to plot various variables against mpg ----
