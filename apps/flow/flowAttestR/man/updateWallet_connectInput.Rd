@@ -3,13 +3,13 @@
 \name{updateWallet_connectInput}
 \alias{updateWallet_connectInput}
 \title{\if{html}{\out{
-<Add Title>
+Wallet_Connect
 }}}
 \usage{
 updateWallet_connectInput(session, inputId, value, configuration = NULL)
 }
 \description{
 \if{html}{\out{
-<Add Description>
+Integrates with Dynamic Wallet Connect widget
 }}
 }

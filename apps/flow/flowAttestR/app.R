@@ -1,5 +1,4 @@
 library(shiny)
-library(flowAttestR)
 
 ui <- fluidPage(
   titlePanel("reactR Input Example"),

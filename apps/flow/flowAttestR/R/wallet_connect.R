@@ -1,6 +1,6 @@
-#' <Add Title>
+#' Wallet_Connect
 #'
-#' <Add Description>
+#' Integrates with Dynamic Wallet Connect widget
 #'
 #' @importFrom reactR createReactShinyInput
 #' @importFrom htmltools htmlDependency tags
@@ -19,7 +19,7 @@ wallet_connectInput <- function(inputId, default = "") {
     ),
     default,
     list(),
-    htmltools::tags$span
+    htmltools::tags$div
   )
 }
 
@@ -31,5 +31,5 @@ wallet_connectInput <- function(inputId, default = "") {
 updateWallet_connectInput <- function(session, inputId, value, configuration = NULL) {
   message <- list(value = value)
   if (!is.null(configuration)) message$configuration <- configuration
-  session$sendInputMessage(inputId, message);
+  session$sendInputMessage(inputId, message)
 }

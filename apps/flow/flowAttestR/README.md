@@ -34,6 +34,21 @@ Save workspace image? [y/n/c]: n
 yarn install
 
 ```
+## "exporting"
+
+R doesn't call it that but that's what we're doing
+
+```
+
+cd <my library to export>
+yarn run webpack --mode=development 
+R
+devtools::document()
+devtools::load_all()
+-or-
+devtools::install()
+```
+
 
 ## Running
 
