@@ -5,15 +5,21 @@ const DynamicAppUser = (props) => {
   const { user } = useDynamicContext();
 
   return (
-    <Button
-      onClick={() =>
-        props.setNewValue(
-          user?.verifiedCredentials?.map((wallet) => wallet.address)
-        )
-      }
-    >
-      Update Score
-    </Button>
+    <>
+      {user ? (
+        <Button
+          onClick={() =>
+            props.setNewValue(
+              user?.verifiedCredentials?.map((wallet) => wallet.address)
+            )
+          }
+        >
+          Update Score
+        </Button>
+      ) : (
+        <></>
+      )}
+    </>
   );
 };
 

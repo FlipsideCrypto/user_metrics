@@ -7,22 +7,24 @@ const TextInput = ({ configuration, value, setValue }) => {
   return (
     <DynamicContextProvider
       settings={{
-        appName: "Example App",
+        appName: "FlowScored",
         multiWallet: true,
-        appLogoUrl:
-          "https://upload.wikimedia.org/wikipedia/commons/3/34/Examplelogo.svg",
-        environmentId: "2b9c5160-2795-44c3-ab0f-ed3bbe8d126c",
+        environmentId: "c6ef9d8c-6b8d-441a-9f67-72b728cef538",
         eventsCallbacks: {
           onAuthSuccess: (args) => {
             console.log("onAuthSuccess was called", args);
             if (args?.isAuthenticated) {
-              setValue(addresses.map((wallet) => wallet.address));
+              setValue(
+                args?.user?.verifiedCredentials?.map((wallet) => wallet.address)
+              );
             }
           },
           onLinkSuccess: (args) => {
             console.log("onLinkSuccess was called", args);
             if (args?.isAuthenticated) {
-              setValue(addresses.map((wallet) => wallet.address));
+              setValue(
+                args?.user?.verifiedCredentials?.map((wallet) => wallet.address)
+              );
             }
           },
         },

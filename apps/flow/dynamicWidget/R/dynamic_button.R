@@ -6,7 +6,7 @@
 #' @importFrom htmltools htmlDependency tags
 #'
 #' @export
-dynamic_buttonInput <- function(inputId, default = "") {
+dynamic_buttonInput <- function(inputId) {
   reactR::createReactShinyInput(
     inputId,
     "dynamic_button",
@@ -17,11 +17,9 @@ dynamic_buttonInput <- function(inputId, default = "") {
       package = "dynamicWidget",
       script = "dynamic_button.js"
     ),
-    default,
-    list(),
-    htmltools::tags$div
+    "",
+    list(), htmltools::tags$div
   )
-  
 }
 
 #' Dyanamic Button

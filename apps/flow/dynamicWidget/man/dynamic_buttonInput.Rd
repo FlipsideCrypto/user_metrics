@@ -4,7 +4,7 @@
 \alias{dynamic_buttonInput}
 \title{Dynamic Button}
 \usage{
-dynamic_buttonInput(inputId, default = "")
+dynamic_buttonInput(inputId, envID)
 }
 \description{
 React Button for multi-wallet connect using Dynamic SDK
