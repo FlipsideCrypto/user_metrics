@@ -1,7 +1,6 @@
 import { reactShinyInput } from "reactR";
 import { DynamicContextProvider, DynamicWidget } from "@dynamic-labs/sdk-react";
 import DynamicAppUser from "./DynamicAppUser.jsx";
-import { Button } from "reactstrap";
 
 const TextInput = ({ configuration, value, setValue }) => {
   return (
