@@ -14,7 +14,9 @@ const TextInput = ({ configuration, value, setValue }) => {
             console.log("onAuthSuccess was called", args);
             if (args?.isAuthenticated) {
               setValue(
-                args?.user?.verifiedCredentials?.map((wallet) => wallet.address)
+                args?.user?.verifiedCredentials?.map(
+                  (wallet) => wallet.walletName + ":" + wallet.address
+                )
               );
             }
           },
@@ -22,7 +24,9 @@ const TextInput = ({ configuration, value, setValue }) => {
             console.log("onLinkSuccess was called", args);
             if (args?.isAuthenticated) {
               setValue(
-                args?.user?.verifiedCredentials?.map((wallet) => wallet.address)
+                args?.user?.verifiedCredentials?.map(
+                  (wallet) => wallet.walletName + ":" + wallet.address
+                )
               );
             }
           },
