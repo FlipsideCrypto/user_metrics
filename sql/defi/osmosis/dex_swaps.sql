@@ -6,7 +6,7 @@ WITH trades_in AS (
     project_name AS token_symbol,
     COUNT(*) AS n_sells,
     SUM(from_amount / POW(10, from_decimal)) AS sell_token_volume,
-    SUM((from_amount / POW(10, DECIMAL)) * price) AS sell_usd_volume
+    SUM((from_amount / POW(10, from_decimal)) * price) AS sell_usd_volume
   FROM
     osmosis.core.fact_swaps s
     INNER JOIN osmosis.core.dim_tokens t
@@ -34,7 +34,7 @@ trades_out AS (
     project_name AS token_symbol,
     COUNT(*) AS n_buys,
     SUM(to_amount / POW(10, TO_DECIMAL)) AS buy_token_volume,
-    SUM((to_amount / POW(10, DECIMAL)) * price) AS buy_usd_volume
+    SUM((to_amount / POW(10, to_decimal)) * price) AS buy_usd_volume
   FROM
     osmosis.core.fact_swaps s
     INNER JOIN osmosis.core.dim_tokens t

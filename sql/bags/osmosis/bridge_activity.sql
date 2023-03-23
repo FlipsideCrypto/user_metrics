@@ -1,6 +1,9 @@
 WITH ins AS (
     SELECT
-        sender AS user_address,
+        sender,
+        receiver,
+        foreign_address,
+        foreign_chain, 
         'IBC' AS bridge_name,
         currency AS token_contract,
         t.project_name AS token_symbol,
@@ -28,7 +31,10 @@ WITH ins AS (
 ),
 outs AS (
     SELECT
-        sender AS user_address,
+        sender,
+        receiver,
+        foreign_address,
+        foreign_chain, 
         'IBC' AS bridge_name,
         currency AS token_contract,
         t.project_name AS token_symbol,
