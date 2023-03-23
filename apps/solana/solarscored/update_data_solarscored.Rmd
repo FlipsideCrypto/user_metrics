@@ -39,76 +39,74 @@ library(odbc)
 
 user <- Sys.info()[['user']]
 isRstudio <- user == 'rstudio-connect'
-switch(
-    isRstudio
-    , source("/home/data-science/data_science/util/util_functions.R")
-    , source("~/data_science/util/util_functions.R")
-)
+if(isRstudio) {
+    source("/home/data-science/data_science/util/util_functions.R")
+} else {
+    source("~/data_science/util/util_functions.R")
+}
 
-query <- "
-    SELECT signers[0]::string AS user_address
-    , COUNT(DISTINCT DATE_TRUNC('month', block_timestamp)) AS value
+long.act.query <- "
+    WITH months AS (SELECT 
+    signers[0]::string AS user_address,
+    count(tx_id) AS n_txn,
+    DATE_TRUNC('month', block_timestamp) AS month
     FROM solana.core.fact_transactions
-    GROUP BY 1
+    WHERE 
+    block_timestamp > current_date - 90
+    AND
+    user_address NOT IN (SELECT address FROM solana.core.dim_labels)
+    GROUP BY user_address, month
+    )
+    SELECT
+    user_address, sum(n_txn) AS activity_value, count(month) AS longevity_value
+    FROM months
+    GROUP BY user_address
 "
-longevity <- QuerySnowflake(query)
-colnames(longevity)[2] <- 'value'
-func <- function(x) {
-    if (x < 2) {return(0)}
-    if (x < 6) {return(1)}
-    if (x < 12) {return(2)}
+sol.long.act <- QuerySnowflake(long.act.query)
+
+long.func <- function(x) {
+    if (x < 1) {return(0)}
+    if (x < 2) {return(1)}
+    if (x < 3) {return(2)}
     return(3)
 }
-longevity[, level := sapply(value, func) ]
-longevity[, metric := 'n_months_active' ]
-longevity <- longevity[, list(metric, user_address, value, level) ]
-print(longevity %>% group_by(level) %>% summarize(n=n()) %>% as.data.table())
-
-query <- "
-    SELECT signers[0]::string AS user_address
-    , COUNT(1) AS value
-    FROM solana.core.fact_transactions
-    WHERE block_timestamp >= CURRENT_DATE - 90
-    GROUP BY 1
-"
-activity <- QuerySnowflake(query)
-colnames(activity)[2] <- 'value'
-func <- function(x) {
-    if (x < 10) {return(0)}
-    if (x < 100) {return(1)}
-    if (x < 1000) {return(2)}
-    return(3)
+activity.func <- function(x) {
+  if (x < 5) {return(0)}
+  if (x < 10) {return(1)}
+  if (x < 20) {return(2)}
+  return(3)
 }
-activity[, level := sapply(value, func) ]
-activity[, metric := 'n_user_tx' ]
-activity <- activity[, list(metric, user_address, value, level) ]
-print(activity %>% group_by(level) %>% summarize(n=n()) %>% as.data.table())
 
-query <- "
+sol.long.act[, longevity := sapply(longevity_value, long.func) ]
+sol.long.act[, activity := sapply(activity_value, activity.func) ]
+
+
+
+# GOVERNANCE 
+gov.query <- "
     SELECT voter AS user_address
-    , COUNT(1) AS value
-    , COUNT(DISTINCT program_name) AS n_user_votes_programs
+    , COUNT(1) AS governance_value
+    --, COUNT(DISTINCT program_name) AS governance_value
     FROM solana.core.fact_proposal_votes
-    GROUP BY 1
+    WHERE 
+    block_timestamp > current_date - 180
+    AND
+    user_address NOT IN (SELECT address FROM solana.core.dim_labels)
+    GROUP BY user_address
     ORDER BY 2 DESC
 "
-governor <- QuerySnowflake(query)
-colnames(governor)[1] <- 'user_address'
-colnames(governor)[2] <- 'value'
-func <- function(x) {
-    if (x < 1) {return(0)}
-    if (x < 10) {return(1)}
-    if (x < 100) {return(2)}
+sol.gov <- QuerySnowflake(gov.query)
+
+gov.func <- function(x) {
+    if (x < 2) {return(1)}
+    if (x < 3) {return(2)}
     return(3)
 }
-governor[, level := sapply(value, func) ]
-governor[, metric := 'n_user_votes' ]
-governor <- governor[, list(metric, user_address, value, level) ]
-print(governor %>% group_by(level) %>% summarize(n=n()) %>% as.data.table())
+sol.gov[, governance := sapply(governance_value, gov.func) ]
 
 
 # Bridgor - How many times are they bridging assets onto Solana (from a bridge or CEX)?
-query <- "
+bridge.query <- "
     WITH tx AS (
         SELECT DISTINCT tx_id
         FROM solana.core.fact_events e
@@ -117,9 +115,8 @@ query <- "
             AND l.label_subtype = 'bridge'
         WHERE e.block_timestamp >= CURRENT_DATE - 90
     )
-    SELECT tx_to AS user_address
-    , COUNT(1) AS n_bridge
-    , SUM(CASE WHEN mint = 'So11111111111111111111111111111111111111112' THEN amount ELSE 0 END) AS value
+    SELECT tx_to AS user_address, COUNT(1) AS bridge_value
+    --, SUM(CASE WHEN mint = 'So11111111111111111111111111111111111111112' THEN amount ELSE 0 END) AS value
     FROM solana.core.fact_transfers t
     LEFT JOIN tx ON tx.tx_id = t.tx_id
     LEFT JOIN solana.core.dim_labels l
@@ -127,235 +124,140 @@ query <- "
         AND (l.label_type = 'cex' OR l.label_subtype = 'bridge' )
     WHERE t.block_timestamp >= CURRENT_DATE - 90
         AND (tx.tx_id IS NOT NULL OR l.label_type IS NOT NULL)
-    GROUP BY 1
-    ORDER BY 3 DESC
-"
-bridgor <- QuerySnowflake(query)
-colnames(bridgor)[1] <- 'user_address'
-colnames(bridgor)[3] <- 'value'
-func <- function(x) {
+        AND user_address NOT IN (SELECT address FROM solana.core.dim_labels)
+    GROUP BY user_address"
+
+sol.bridge <- QuerySnowflake(bridge.query)
+
+bridge.func <- function(x) {
     if (x < 1) {return(0)}
-    if (x < 100) {return(1)}
-    if (x < 1000) {return(2)}
+    if (x < 2) {return(1)}
+    if (x < 3) {return(2)}
     return(3)
 }
-bridgor[, level := sapply(value, func) ]
-bridgor[, metric := 'bridged_sol' ]
-bridgor <- bridgor[, list(metric, user_address, value, level) ]
-print( bridgor %>% group_by(level) %>% summarize(n=n()) %>% as.data.table() )
+sol.bridge[, bridge := sapply(bridge_value, bridge.func) ]
+
 
 # Staker - How much SOL have they staked?
-query <- "
+staking.query <- "
     WITH b0 AS (
         SELECT *
         , ROW_NUMBER() OVER (PARTITION BY stake_authority ORDER BY block_timestamp DESC) AS rn
         FROM solana.core.ez_staking_lp_actions
+    
     )
     SELECT stake_authority AS user_address
-    , COALESCE(post_tx_staked_balance, 0) * POWER(10, -9) AS value
+    , COALESCE(post_tx_staked_balance, 0) * POWER(10, -9) AS staking_value
     FROM b0
     WHERE rn = 1
-
+    AND 
+    user_address NOT IN (SELECT address FROM solana.core.dim_labels)
 "
-staker <- QuerySnowflake(query)
-colnames(staker)[2] <- 'value'
-staker <- staker[ !is.na(value) ]
-func <- function(x) {
+sol.staking <- QuerySnowflake(staking.query)
+
+
+staking.func <- function(x) {
     if (x < 1) {return(0)}
-    if (x < 100) {return(1)}
-    if (x < 1000) {return(2)}
+    if (x < 5) {return(1)}
+    if (x < 15) {return(2)}
     return(3)
 }
-staker[, level := sapply(value, func) ]
-staker[, metric := 'staked_sol' ]
-staker <- staker[, list(metric, user_address, value, level) ]
-print( staker %>% group_by(level) %>% summarize(n=n()) %>% as.data.table() )
+sol.staking[, staking := sapply(staking_value, staking.func) ]
 
-# explorer
-query <- "
-    WITH signers AS (
-        SELECT tx_id
-        , signers[0]::string AS user_address
-        FROM solana.core.fact_transactions
-        WHERE block_timestamp >= CURRENT_DATE - 90
-        GROUP BY 1, 2
-    )
-    SELECT user_address
-    , COUNT(DISTINCT COALESCE(l.label, e.program_id)) AS value
-    FROM solana.core.fact_events e
-    JOIN signers s ON s.tx_id = e.tx_id
-    LEFT JOIN solana.core.dim_labels l 
-        ON l.address = e.program_id
-    WHERE e.block_timestamp >= CURRENT_DATE - 90
-    GROUP BY 1
+# variety
+variety.query <- "
+select
+signers[0]::string AS user_address,
+count(distinct(program_id)) AS variety_value
+from SOLANA.CORE.FACT_EVENTS
+where block_timestamp > current_date - 90
+AND user_address NOT IN (SELECT address FROM solana.core.dim_labels)
+group by user_address
 "
-explorer <- QuerySnowflake(query)
-colnames(explorer)[2] <- 'value'
-func <- function(x) {
+sol.variety <- QuerySnowflake(variety.query)
+summary(sol.variety$n_programs)
+var.func <- function(x) {
     if (x < 1) {return(0)}
-    if (x < 10) {return(1)}
-    if (x < 25) {return(2)}
+    if (x < 5) {return(1)}
+    if (x < 10) {return(2)}
     return(3)
 }
-explorer[, level := sapply(value, func) ]
-explorer[, metric := 'n_unique_programs' ]
-explorer <- explorer[, list(metric, user_address, value, level) ]
-print( explorer %>% group_by(level) %>% summarize(n=n()) %>% as.data.table() )
+sol.variety[, variety := sapply(variety_value, var.func) ]
+
 
 # nfts
-query <- "
+mints.query <- "
     WITH buys AS (
         SELECT purchaser AS user_address
         , SUM(sales_amount) AS buy_volume
         FROM solana.core.fact_nft_sales
-        WHERE block_timestamp >= CURRENT_DATE - 180
-            AND succeeded
-        GROUP BY 1
-    ), sells AS (
-        SELECT seller AS user_address
-        , SUM(sales_amount) AS sell_volume
-        FROM solana.core.fact_nft_sales
-        WHERE block_timestamp >= CURRENT_DATE - 180
-            AND succeeded
-        GROUP BY 1
+        WHERE block_timestamp >= CURRENT_DATE - 90
+            AND 
+            succeeded = TRUE
+            AND
+            user_address NOT IN (SELECT address FROM solana.core.dim_labels)
+        GROUP BY user_address
     ), mints AS (
         SELECT purchaser AS user_address
         , SUM(mint_price) AS mint_volume
         FROM solana.core.fact_nft_mints
-        WHERE block_timestamp >= CURRENT_DATE - 180
+        WHERE block_timestamp >= CURRENT_DATE - 90
             AND succeeded
             AND mint_currency = 'So11111111111111111111111111111111111111111'
             AND mint_price <= 15
+            AND user_address NOT IN (SELECT address FROM solana.core.dim_labels)
         GROUP BY 1
     )
-    SELECT COALESCE(b.user_address, s.user_address, m.user_address) AS user_address
-    , COALESCE(b.buy_volume, 0) + COALESCE(s.sell_volume, 0) + COALESCE(m.mint_volume, 0) AS nft_volume
+    SELECT COALESCE(b.user_address, m.user_address) AS user_address
+    , COALESCE(b.buy_volume, 0) + COALESCE(m.mint_volume, 0) AS nft_value
     FROM buys b 
-    FULL OUTER JOIN sells s
-        ON s.user_address = b.user_address
+    --FULL OUTER JOIN sells s
+    --    ON s.user_address = b.user_address
     FULL OUTER JOIN mints m
-        ON m.user_address = COALESCE(b.user_address, s.user_address)
-
+        ON m.user_address = b.user_address
 "
-mints <- QuerySnowflake(query)
-colnames(mints)[2] <- 'value'
-func <- function(x) {
+sol.nfts <- QuerySnowflake(mints.query)
+
+nfts.func <- function(x) {
     if (x < 1) {return(0)}
-    if (x < 100) {return(1)}
-    if (x < 1000) {return(2)}
+    if (x < 5) {return(1)}
+    if (x < 10) {return(2)}
     return(3)
 }
-mints[, level := sapply(value, func) ]
-mints[, metric := 'nft_volume' ]
-mints <- mints[, list(metric, user_address, value, level) ]
-print( mints %>% group_by(level) %>% summarize(n=n()) %>% as.data.table() )
+sol.nfts[, nfts := sapply(nft_value, nfts.func) ]
 
-explorer[ user_address == '9VhsSZ6ni7dZtmKRHE81yAd3UQW1oKu9LNEWRGFMA5wj' ]
-explorer[ user_address == 'AoNVE2rKCE2YNA44V7NQt8N73JdPM7b6acZ2vzSpyPyi' ]
 
-head(explorer)
-colnames(longevity)
-colnames(activity)
-colnames(governor)
-colnames(bridgor)
-colnames(staker)
-colnames(explorer)
+full.data <- MergeDataFrames(list(sol.long.act,
+                                  sol.variety,
+                                  sol.nfts,
+                                  sol.staking,
+                                  sol.gov,
+                                  sol.bridge), 
+                             by = "user_address", all = TRUE)
+ReplaceValues(full.data)
+full.data[, total_score := longevity + activity + governance + bridge + staking + variety + nfts ]
 
-a <- longevity[level > 0, list(user_address, level)]
-b <- activity[level > 0, list(user_address, level)]
-c <- governor[level > 0, list(user_address, level)]
-d <- bridgor[level > 0, list(user_address, level)]
-e <- staker[level > 0, list(user_address, level)]
-f <- explorer[level > 0, list(user_address, level)]
-g <- mints[level > 0, list(user_address, level)]
 
-colnames(a) <- c( 'user_address','longevity' )
-colnames(b) <- c( 'user_address','activity' )
-colnames(c) <- c( 'user_address','governor' )
-colnames(d) <- c( 'user_address','bridgor' )
-colnames(e) <- c( 'user_address','staker' )
-colnames(f) <- c( 'user_address','explorer' )
-colnames(g) <- c( 'user_address','nfts' )
+#full.data[, .N, by = total_score][order(total_score)]
 
-df_list <- list(a, b, c, d, e, f, g)
-df <- Reduce(function(x, y) base::merge(x, y, all=TRUE), df_list) %>% as.data.table()
-df[ is.na(df) ] <- 0
+# get rid of some behavior that can't be human OR is too low to qualify
+full.data <- full.data[total_score > 0]
 
-# longevity
-df[, longevity_1 := as.numeric(longevity >= 1) ]
-df[, longevity_2 := as.numeric(longevity >= 2) ]
-df[, longevity_3 := as.numeric(longevity >= 3) ]
-# activity
-df[, activity_1 := as.numeric(activity >= 1) ]
-df[, activity_2 := as.numeric(activity >= 2) ]
-df[, activity_3 := as.numeric(activity >= 3) ]
-# governor
-df[, governor_1 := as.numeric(governor >= 1) ]
-df[, governor_2 := as.numeric(governor >= 2) ]
-df[, governor_3 := as.numeric(governor >= 3) ]
-# bridgor
-df[, bridgor_1 := as.numeric(bridgor >= 1) ]
-df[, bridgor_2 := as.numeric(bridgor >= 2) ]
-df[, bridgor_3 := as.numeric(bridgor >= 3) ]
-# staker
-df[, staker_1 := as.numeric(staker >= 1) ]
-df[, staker_2 := as.numeric(staker >= 2) ]
-df[, staker_3 := as.numeric(staker >= 3) ]
-# explorer
-df[, explorer_1 := as.numeric(explorer >= 1) ]
-df[, explorer_2 := as.numeric(explorer >= 2) ]
-df[, explorer_3 := as.numeric(explorer >= 3) ]
-# nfts
-df[, nfts_1 := as.numeric(nfts >= 1) ]
-df[, nfts_2 := as.numeric(nfts >= 2) ]
-df[, nfts_3 := as.numeric(nfts >= 3) ]
+# if you do avg more than 1 tx per hour over 90 days, you don't 
+# get a score bc you're not a person you're a computer
+# save these addresses to remove them later
+full.data <- full.data[activity_value < 24*90]
+full.data <- full.data[bridge_value < 24*90]
 
-df[, longevity := longevity_1 + (longevity_2 * 2) + (longevity_3 * 3) ]
-df[, activity := activity_1 + (activity_2 * 2) + (activity_3 * 3) ]
-df[, governor := governor_1 + (governor_2 * 2) + (governor_3 * 3) ]
-df[, bridgor := bridgor_1 + (bridgor_2 * 2) + (bridgor_3 * 3) ]
-df[, staker := staker_1 + (staker_2 * 2) + (staker_3 * 3) ]
-df[, explorer := explorer_1 + (explorer_2 * 2) + (explorer_3 * 3) ]
-df[, nfts := nfts_1 + (nfts_2 * 2) + (nfts_3 * 3) ]
-
-df[, total_score := longevity + activity + governor + bridgor + staker + explorer + nfts ]
-
-# sudo cp ~/score_criteria.csv /rstudio-data
-# score_criteria <- read.csv('/Users/kellen/data_science/viz/solarscored/score_criteria.csv') %>% as.data.table()
-score_criteria <- read.csv('/rstudio-data/score_criteria.csv') %>% as.data.table()
-
-# head(df)
-
-# df <- rbind(
-#     longevity
-#     , activity
-#     , governor
-#     , bridgor
-#     , staker
-#     , explorer
-# )
-# g <- df %>% group_by(user_address) %>% summarize(level=sum(level)) %>% as.data.table()
-# g <- g[order(-level)]
-# print( g %>% group_by(level) %>% summarize(n=n()) %>% as.data.table() )
-# head(g)
-# g[, metric := 'total_score' ]
-# g$value <- g$level
-
-# df <- rbind(df, g)
-
-# df[ metric == 'total_score' ]
+df <- full.data
 
 file.location <- ifelse(
     isRstudio
     , '/rstudio-data/solarscored_data.RData'
-    , '/Users/kellen/data_science/viz/solarscored/solarscored_data.RData'
+    , '~/user_metrics/apps/solana/solarscored/solarscored_data.RData'
 )
 
-save(
-    df
-    , score_criteria
-    , file = file.location
-)
+save(df, file = file.location)
 
 ```
 

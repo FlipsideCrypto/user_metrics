@@ -8,7 +8,7 @@ DATEDIFF('days', date_trunc('day', max(block_timestamp)), current_date) AS last_
 0 AS n_contracts
 FROM flow.core.fact_transactions
 WHERE
-block_timestamp >= current_date - 180
+block_timestamp >= current_date - 91
 AND
 tx_succeeded = TRUE
 AND 

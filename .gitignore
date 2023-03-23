@@ -1,9 +1,10 @@
 .Rproj.user
 .Rhistory
-.RData
+*.RData
 .Ruserdata
 *.DS_Store
 .DS_Store
 *.txt
 secrets.json
 *.dcf
+.dcf

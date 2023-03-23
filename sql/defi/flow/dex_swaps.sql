@@ -5,7 +5,7 @@ SELECT
   date_trunc('day', timestamp) AS day,
   AVG(price_usd) AS price
 FROM flow.core.fact_prices
-WHERE timestamp > current_date - 180
+WHERE timestamp > current_date - 91
 GROUP BY symbol, token_contract, day
 ),
 sells AS (
@@ -22,7 +22,7 @@ sells AS (
   LEFT JOIN daily_prices dp ON date_trunc('day', ds.block_timestamp) = dp.day
       AND ds.token_out_contract = dp.token_contract
   WHERE
-  block_timestamp > current_date - 180
+  block_timestamp > current_date - 91
   GROUP BY 
   trader, swap_contract, symbol, token_out_contract
 ),
@@ -40,7 +40,7 @@ buys AS (
   LEFT JOIN daily_prices dp ON date_trunc('day', ds.block_timestamp) = dp.day
       AND ds.token_in_contract = dp.token_contract
   WHERE
-  block_timestamp > current_date - 180
+  block_timestamp > current_date - 91
   GROUP BY 
   trader, swap_contract, symbol, token_in_contract
 )

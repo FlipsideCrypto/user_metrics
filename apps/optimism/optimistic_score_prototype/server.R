@@ -20,6 +20,11 @@ function(input, output, session) {
       updateActionButton(session = session, inputId = "connect", 
                          label = paste0("connected as ", substr(input$eth_address, 1, 7), "..."),
                          icon = character(0))
+      tmp <- data.table(address = input$eth_address,
+                        time = Sys.time(),
+                        score = userScore())
+      write.csv(tmp, file = paste0("/rstudio-data/optimistic-data/", input$eth_address, "_", Sys.time(), ".csv"), row.names = FALSE)
+      
     } else {
       
       updateActionButton(session = session, inputId = "connect", 
@@ -119,6 +124,7 @@ function(input, output, session) {
   })
 
   
+  
   userScore <- reactive({
     if(nrow(thisAddyData()) > 0) {
       thisAddyData()$total_score
@@ -127,10 +133,13 @@ function(input, output, session) {
     }
   })
   
+  
+  
+  
   output$tx_handler <- renderUI({
     TransactionHandler(
       "tx_button", 
-      chainId = 420,
+      chainId = 10,
       label = "Attest Your Score On Chain",
       contract_address = "0xD870A73a32d0b8C34CcF1E6098E9A26977CB605b",
       contract_abi = abi,
