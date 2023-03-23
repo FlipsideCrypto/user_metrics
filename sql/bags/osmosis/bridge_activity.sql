@@ -24,7 +24,10 @@ WITH ins AS (
         block_timestamp :: DATE >= CURRENT_DATE - 90
         AND transfer_type = 'IBC_TRANSFER_IN'
     GROUP BY
-        user_address,
+        sender,
+        receiver,
+        foreign_address,
+        foreign_chain,
         bridge_name,
         token_contract,
         token_symbol
@@ -55,13 +58,19 @@ outs AS (
         block_timestamp :: DATE >= CURRENT_DATE - 90
         AND transfer_type = 'IBC_TRANSFER_OUT'
     GROUP BY
-        user_address,
+        sender,
+        receiver,
+        foreign_address,
+        foreign_chain, 
         bridge_name,
         token_contract,
         token_symbol
 )
 SELECT
-    user_address,
+    sender,
+    receiver,
+    foreign_address,
+    foreign_chain,
     bridge_name,
     token_contract,
     token_symbol,
@@ -72,5 +81,6 @@ SELECT
     out_token_volume,
     out_usd_volume
 FROM
-    ins NATURAL FULL
+    ins 
+    NATURAL FULL
     JOIN outs
