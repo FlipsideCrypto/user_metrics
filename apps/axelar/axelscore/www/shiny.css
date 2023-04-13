@@ -1,0 +1,198 @@
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap');
+
+body {
+  background-color: white;
+  color: black;
+  font-family: 'IBM Plex Sans Condensed', sans-serif;
+  font-size: 18px;
+  letter-spacing: -.03em;
+}
+
+hr {
+  width: 90%;
+  border: none; /* Remove the default border */
+  border-top: 1px dashed #000; /* Add a dashed border to the top */
+  margin: auto; /* Center the hr element */
+}
+
+.container-fluid {
+  /* max-width: min(1650px, 90%); */
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 100%;
+  padding-left: 0;
+  padding-right: 0;
+  margin-top: 10px;
+}
+
+.flex-container {
+  display: flex;
+}
+
+#leftcol,
+#rightcol {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px dashed black;
+  border-right: 1px dashed black;
+  font-family: 'IBM Plex Mono', monospace;
+  text-align: center;
+  font-size: 0.88em;
+}
+
+.top-border {
+  border-top: 1px dashed black;
+}
+
+.last-child-border {
+  margin-top: auto;
+  border-bottom: 1px dashed black;
+}
+
+#rightcol i,
+#leftcol i {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-size: 1.2em;
+}
+
+.titlerow {
+  padding-top: 10px;
+  border-top: 1px dashed black;
+  border-bottom: 1px dashed black;
+  padding-bottom: 10px;
+  text-align: center;
+  min-height: 100px;
+}
+
+.upperwords {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* upper right icon links */
+#icons {
+  display: flex;
+  padding-top: 10px;
+  padding-left: 30px;
+}
+
+.aboutlinks {
+  padding-left: 20px;
+  padding-bottom: 15px;
+}
+
+
+
+#mainsection {
+  background-image: linear-gradient(104.05deg, rgba(244,244,244,0.5) 0.02%, rgba(212,238,252,0.5) 50.02%, rgba(164,218,248,0.5) 100.02%)!important;
+  padding-bottom: 15px;
+  border-bottom: 1px dashed black;
+}
+
+.mapcol {
+  display: flex; 
+  justify-content: center; 
+  align-items: center;
+}
+
+.scorecontainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.leftbox {
+  width: 50%;
+}
+
+.rightbox {
+  width: 50%;
+  border-left: 1px dashed black;
+}
+
+.score {
+  font-size: 1.5em;
+  font-family: 'IBM Plex Mono', monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scoretitle {
+  font-size: 1.1em;
+  text-transform: uppercase;
+}
+
+#clickedstation {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+#holdd3 {
+  margin-top: 15px;
+  border-right: 1px dashed black;
+}
+
+.button, .button--large, .button--primary, .button--rounded, .dynamic-connect-button, .typography, .typography--button-primary, .typography--primary {
+  padding: 2px !important;
+  border-radius: 0 !important;
+  border: none !important;
+}
+
+.connect {
+  text-align: center;
+  padding: 20px;
+}
+
+.promo {
+  text-align: center;
+  padding: 20px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.title {
+  font-weight: 900;
+  font-size: 1.1em;
+  text-align: center;
+}
+
+
+
+
+
+
+
+.diagonal-lines {
+  position: relative;
+  background-color: #fff;
+  width: 100%;
+  height: 100px;
+  overflow: hidden;
+  
+}
+
+.diagonal-lines::before,
+.diagonal-lines::after {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 1px;
+  background-color: transparent;
+  left: -50%;
+  top: 50%;
+  transform-origin: 50% 0;
+}
+
+.diagonal-lines::before {
+  transform: rotate(45deg);
+  border-top: 1px dashed black;
+}
+
+.diagonal-lines::after {
+  transform: rotate(-45deg);
+  border-top: 1px dashed black;
+}
