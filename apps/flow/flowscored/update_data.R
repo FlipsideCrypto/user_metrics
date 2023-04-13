@@ -1,3 +1,4 @@
+source("~/data_science/util/util_functions.R")
 
 flow.labels <- QuerySnowflake("SELECT * FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS where blockchain = 'flow'")
 flow.contracts <- QuerySnowflake("SELECT * FROM flow.core.dim_contract_labels")
@@ -474,7 +475,8 @@ user.stats <- merge(pack.rips[, list(n_rips = sum(n_rips)), by = user_address],
                     by = "user_address", all = TRUE)
 
 user.stats <- merge(user.stats,
-                    nft.sales[nf_token_contract %in% c('A.0b2a3299cc857e29.TopShot', 'A.e4cf4bdc1751c65d.AllDay', 'A.329feb3ab062d289.UFC_NFT', 'A.87ca73a41bb50ad5.Golazos'),
+                    nft.sales[nf_token_contract %in% c('A.0b2a3299cc857e29.TopShot', 'A.e4cf4bdc1751c65d.AllDay', 
+                                                       'A.329feb3ab062d289.UFC_NFT', 'A.87ca73a41bb50ad5.Golazos'),
                               list(n_nft_buys_dapper = sum(n_buys)), by = user_address],
                     by = "user_address", all = TRUE)
 
@@ -501,60 +503,21 @@ user.stats <- user.stats[user_address != "null" & (
 
 ReplaceValues(user.stats)
 
-user.stats[n_rips > 0 | n_listings > 0 | n_nft_buys_dapper > 0]
-
-jackf1 <- c("0x69a1f5cefd1e0fdf", "0xcf3ead0e195bdd0f")
-angeal <- c("0xc04f0af1dab0a999", "0x52eceb884aa542c6")
-jackf2 <- c("0xcc17b1ed3d9b079c", "0x60787d9233b782ad")
+user.stats <- user.stats[!(user_address %in% c(flow.labels$address, flow.contracts$account_address))]
 
 
-user.stats[user_address %in% angeal]
-user.stats[user_address %in% jackf1]
-user.stats[user_address %in% jackf2]
+max.block <- QuerySnowflake("SELECT max(block_timestamp) AS max_time, max(block_height) AS max_block FROM flow.core.fact_transactions")
+
+
+last.blocks <- paste0("Data is updated through ", min(max.block$max_time), 
+                      ", block number ", min(max.block$max_block))
+
+save(user.stats, last.blocks, file = '~/user_metrics/apps/flow/flowscored/flowscored_data.RData')
 
 
 
 
-froms.tos$N <- NULL
-froms.tos$n_froms <- NULL
-setnames(froms.tos, c("dapper", "blocto"))
-
-paste(paste(paste0("d_", names(user.stats)[2:9]), " = ", names(user.stats)[2:9]), collapse = ", ")
-paste(paste(paste0("b_", names(user.stats)[2:9]), " = ", names(user.stats)[2:9]), collapse = ", ")
-
-letsee <- merge(froms.tos,
-                user.stats[, list(dapper = user_address, d_n_rips  =  n_rips, d_n_listings  =  n_listings, d_n_nft_buys_dapper  =  n_nft_buys_dapper, d_n_nft_trades_nd  =  n_nft_trades_nd, d_n_nft_projects_nd  =  n_nft_projects_nd, d_n_stakes  =  n_stakes, d_n_swaps  =  n_swaps, d_n_txn  =  n_txn)],
-                by = "dapper", all.x = TRUE, all.y = FALSE)
-
-letsee <- merge(letsee,
-                user.stats[, list(blocto = user_address, b_n_rips  =  n_rips, b_n_listings  =  n_listings, b_n_nft_buys_dapper  =  n_nft_buys_dapper, b_n_nft_trades_nd  =  n_nft_trades_nd, b_n_nft_projects_nd  =  n_nft_projects_nd, b_n_stakes  =  n_stakes, b_n_swaps  =  n_swaps, b_n_txn  =  n_txn)],
-                by = "blocto", all.x = TRUE, all.y = FALSE)
 
 
-user.stats[n_rips > 1]
-user.stats[n_rips > 5]
-user.stats[n_rips > 10]
-
-user.stats[n_listings > 1]
-user.stats[n_listings > 5]
-user.stats[n_listings > 10]
-
-user.stats[n_nft_buys_dapper > 1]
-user.stats[n_nft_buys_dapper > 5]
-user.stats[n_nft_buys_dapper > 10]
-
-# bonus
-user.stats[n_nft_trades_nd > 0]
-user.stats[n_stakes > 0]
-user.stats[n_swaps > 0]
-
-dual.address.set <- froms.tos
-
-save(user.stats, dual.address.set, file = "data.RData")
-
-dual.address.set <- dual.address.set[dapper %in% user.stats$user_address |
-                                       blocto %in% user.stats$user_address]
-
-user.stats[user_address %in% c("0x92435b7fc135685e", "0x773712e39665ad6a")]
 
 
