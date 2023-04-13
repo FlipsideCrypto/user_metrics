@@ -1,10 +1,39 @@
-source("~/data_science/util/util_functions.R")
+library(shroomDK)
+library(data.table)
 
-flow.labels <- QuerySnowflake("SELECT * FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS where blockchain = 'flow'")
-flow.contracts <- QuerySnowflake("SELECT * FROM flow.core.dim_contract_labels")
+# load his file for later
+ReplaceValues <- function(table = dt,
+                          from = NA,
+                          to = 0,
+                          columns = "all.vars"){
+  if(columns[[1]] == "all.vars"){ 
+    which.cols <- seq_len(ncol(table))
+  } else {
+    which.cols <- which(names(table) %in% columns)
+  }
+  
+  if(is.na(from)){
+    for (j in which.cols)
+      set(table,which(is.na(table[[j]])),j,to)
+  } else {
+    for (j in which.cols)
+      set(table,which(table[[j]] == from),j,to)
+  }
+}
 
-# rrrrips
-pack.rips <- QuerySnowflake("
+# read api key (not in github get one here: https://sdk.flipsidecrypto.xyz/shroomdk)
+api.key <- readLines("api_key.txt")
+
+# load labels and contracts
+flow.labels <- auto_paginate_query(query = "SELECT * FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS where blockchain = 'flow'",
+                                      api_key = api.key)
+
+flow.contracts <- auto_paginate_query(query = "SELECT * FROM flow.core.dim_contract_labels",
+                                   api_key = api.key)
+
+
+# load daper pack rips
+pack.rips <- auto_paginate_query(query = "
 with wdraws AS (
 SELECT
 tx_id, 
@@ -45,12 +74,12 @@ event_contract IN ('A.0b2a3299cc857e29.TopShot', 'A.e4cf4bdc1751c65d.AllDay', 'A
 AND
 event_type = 'Deposit'
 GROUP BY 
-user_address, nft_collection
-")
+user_address, nft_collection",
+api_key = api.key)
 
 
 # listings
-nft.listings <- QuerySnowflake("
+nft.listings <- auto_paginate_query(query = "
 WITH listings AS (
   select
   event_data:seller::string AS user_address,
@@ -110,11 +139,12 @@ user_address NOT IN (SELECT account_address FROM FLOW.CORE.DIM_CONTRACT_LABELS)
 AND
 user_address NOT IN (SELECT address FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS WHERE blockchain = 'flow')
 GROUP BY user_address
-")
+",
+api_key = api.key)
 
 
 
-nft.sales <- QuerySnowflake("WITH daily_prices AS (
+nft.sales <- auto_paginate_query(query = "WITH daily_prices AS (
   SELECT 
   symbol,
   token_contract,
@@ -199,74 +229,13 @@ FROM sells
 FULL OUTER JOIN buys ON sells.user_address = buys.user_address
 AND sells.marketplace = buys.marketplace
 AND sells.nf_token_contract = buys.nf_token_contract
-AND sells.currency = buys.currency")
+AND sells.currency = buys.currency",
+api_key = api.key)
 
 
-# list nft's
-listings <- QuerySnowflake("
-WITH listings AS (
-  select
-  event_data:seller::string AS user_address,
-  count(tx_id) AS listings
-  FROM flow.core.fact_events
-  WHERE 
-  event_contract IN ('A.c1e4f4f4c4257510.TopShotMarketV3', 'A.c38aea683c0c4d38.Market')
-  AND 
-  event_type = 'MomentListed'
-  AND
-  block_timestamp >= current_date - 91
-  AND
-  tx_succeeded = TRUE
-  GROUP BY user_address
-  
-  UNION
-  
-  select
-event_data:storefrontAddress::string AS user_address,
-count(tx_id) AS listings
-FROM flow.core.fact_events
-WHERE 
-event_contract IN ('A.4eb8a10cb9f87357.NFTStorefront', 'A.4eb8a10cb9f87357.NFTStorefrontV2')
-AND 
-event_type = 'ListingAvailable'
-AND
-block_timestamp >= current_date - 91
-AND
-tx_succeeded = TRUE
-GROUP BY user_address
 
-UNION
-
-select
-  event_data:seller::string AS user_address,
-  count(tx_id) AS listings
-  FROM flow.core.fact_events
-  WHERE 
-  event_contract = 'A.85b075e08d13f697.OlympicPinMarket'
-  AND 
-  event_type = 'PieceListed'
-  AND
-  block_timestamp >= current_date - 91
-  AND
-  tx_succeeded = TRUE
-  GROUP BY user_address
-  
-)
-
-SELECT
-user_address,
-sum(listings) AS n_listings
-FROM
-listings
-WHERE
-user_address NOT IN (SELECT account_address FROM FLOW.CORE.DIM_CONTRACT_LABELS)
-AND
-user_address NOT IN (SELECT address FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS WHERE blockchain = 'flow')
-GROUP BY user_address
-")
-
-# chain stakes:
-chain.stakes <- QuerySnowflake("
+# chain stakes (FLOW staking):
+chain.stakes <- auto_paginate_query(query = "
 WITH daily_prices AS (
   SELECT date_trunc('day', timestamp) AS day,
   AVG(price_usd) AS price
@@ -317,12 +286,11 @@ COALESCE(stake_usd_volume, 0) AS stake_usd_volume,
 COALESCE(unstake_token_volume, 0) AS unstake_token_volume,
 COALESCE(unstake_usd_volume, 0) AS unstake_usd_volume
 FROM stakes s
-FULL OUTER JOIN unstakes u ON s.user_address = u.user_address
+FULL OUTER JOIN unstakes u ON s.user_address = u.user_address",
+api_key = api.key)
 
-                               ")
 
-
-dex.swaps <- QuerySnowflake("
+dex.swaps <- auto_paginate_query(query = "
 WITH daily_prices AS (
 SELECT 
   symbol,
@@ -385,9 +353,11 @@ FROM sells
 FULL OUTER JOIN buys ON sells.user_address = buys.user_address
 AND sells.swap_contract = buys.swap_contract
 AND sells.token_contract = buys.token_contract
-")
+",
+api_key = api.key)
 
-activity <- QuerySnowflake("
+# general tx counts
+activity <- auto_paginate_query(query = "
 --user_address | n_txn | n_days_active | days_since_last_txn | n_contracts
 SELECT
 proposer AS user_address,
@@ -407,79 +377,23 @@ AND
 proposer NOT IN (SELECT address FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS WHERE blockchain = 'flow')
 GROUP BY
 proposer
-")
+",
+api_key = api.key)
 
 
-dapper.to.blocto <- QuerySnowflake("
-with account_creations as (
-SELECT
-tx_id, event_data:address::string AS user_address
-FROM 
-flow.core.fact_events
-WHERE
-event_type = 'AccountCreated'
-),
-dapper_wals AS (
-select 
-ft.tx_id, block_timestamp, user_address, proposer
-from flow.core.fact_transactions ft
-JOIN account_creations ac ON ft.tx_id = ac.tx_id
-where proposer = '0x18eb4ee6b3c026d2'),
-
-dapper_wdraws AS (
-select
-tx_id, block_timestamp, event_contract, event_data:from::string AS xfer_from
-from flow.core.fact_events
-  where 
-  event_type = 'Withdraw'
-  and
-  event_data:from::string IN (select user_address from dapper_wals)
-)
-
-select
-count(fe.tx_id) AS n_xfers,
-date_trunc('month', fe.block_timestamp) AS month,
-min(fe.block_timestamp) AS min_time,
-fe.event_contract, 
-xfer_from, 
-event_data:to::string AS xfer_to
---event_data:id::number AS nft_id
-
-from flow.core.fact_events fe
-join dapper_wdraws dw ON fe.tx_id = dw.tx_id AND fe.event_contract = dw.event_contract
-  where 
-  event_type = 'Deposit'
-  and
-  event_data:to::string NOT IN (select user_address from dapper_wals)
-  and
-  fe.tx_id NOT IN (select tx_id FROM flow.core.ez_nft_sales)
-  group by month, fe.event_contract, xfer_from, xfer_to
-")
-
-dapper.to.blocto <- unique(dapper.to.blocto[xfer_from %notin% flow.contracts$account_address &
-                                                    xfer_to %notin% flow.contracts$account_address &
-                                                    substr(xfer_from, 1, 2) == "0x" &
-                                                    substr(xfer_to, 1, 2) == "0x"])
-froms.tos <- dapper.to.blocto[, .N, by = "xfer_from,xfer_to"]
-
-froms.tos[, n_froms := uniqueN(xfer_from), by = xfer_to]
-froms.tos <- froms.tos[n_froms == 1]
-
-dapper.to.blocto <- dapper.to.blocto[xfer_from %in% froms.tos$xfer_from]
-
-
-
-
+# start putting all of the data together
 user.stats <- merge(pack.rips[, list(n_rips = sum(n_rips)), by = user_address],
                     listings,
                     by = "user_address", all = TRUE)
 
+# only dapper buys
 user.stats <- merge(user.stats,
                     nft.sales[nf_token_contract %in% c('A.0b2a3299cc857e29.TopShot', 'A.e4cf4bdc1751c65d.AllDay', 
                                                        'A.329feb3ab062d289.UFC_NFT', 'A.87ca73a41bb50ad5.Golazos'),
                               list(n_nft_buys_dapper = sum(n_buys)), by = user_address],
                     by = "user_address", all = TRUE)
 
+# only NOT dapper buys
 user.stats <- merge(user.stats,
                     nft.sales[!(nf_token_contract %in% 
                                   c('A.0b2a3299cc857e29.TopShot', 'A.e4cf4bdc1751c65d.AllDay', 
@@ -497,21 +411,27 @@ user.stats <- merge(user.stats,
                     dex.swaps[, list(n_swaps = sum(n_buys) + sum(n_sells)), by = user_address],
                     by = "user_address", all = TRUE)
 
+# only keep users with nonzero entries
 user.stats <- user.stats[user_address != "null" & (
   n_rips > 0 | n_listings > 0 | n_nft_buys_dapper > 0 | n_nft_trades_nd > 0 | n_nft_projects_nd > 0 | n_stakes > 0 
   )]
 
+# replace NA's w 0's
 ReplaceValues(user.stats)
 
+# finally double check that we're not scoring any known non-user addresses
 user.stats <- user.stats[!(user_address %in% c(flow.labels$address, flow.contracts$account_address))]
 
 
-max.block <- QuerySnowflake("SELECT max(block_timestamp) AS max_time, max(block_height) AS max_block FROM flow.core.fact_transactions")
-
-
+# grab the last data block to show on app
+max.block <- auto_paginate_query(query = "SELECT max(block_timestamp) AS max_time, max(block_height) AS max_block FROM flow.core.fact_transactions",
+                                 api_key = api.key)
+                                 
 last.blocks <- paste0("Data is updated through ", min(max.block$max_time), 
                       ", block number ", min(max.block$max_block))
 
+
+# save file to run app
 save(user.stats, last.blocks, file = '~/user_metrics/apps/flow/flowscored/flowscored_data.RData')
 
 
