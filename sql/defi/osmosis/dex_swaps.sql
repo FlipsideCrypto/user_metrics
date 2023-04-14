@@ -38,7 +38,7 @@ trades_out AS (
   FROM
     osmosis.core.fact_swaps s
     INNER JOIN osmosis.core.dim_tokens t
-    ON from_currency = t.address
+    ON to_currency = t.address
     INNER JOIN osmosis.core.dim_prices p
     ON DATE_TRUNC(
       'hour',
