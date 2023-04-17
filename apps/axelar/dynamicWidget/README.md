@@ -56,3 +56,13 @@ devtools::install()
 cd <this directory>
  R -e "shiny::runApp('.')"
 ```
+
+## Deploying
+
+```
+update library name in DESCRIPTION file
+
+cd <this directory>
+ R
+ devtools::build()
+```
