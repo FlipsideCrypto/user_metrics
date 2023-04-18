@@ -32,6 +32,10 @@ const DynamicAppUser = (props) => {
             }
           })
         );
+        // also add evm chains
+        .user?.verifiedCredentials?.map((wallet) => {
+          wallets.push(wallet.walletName + ":" + wallet.address);
+        });
         props.setNewValue(wallets.toString());
       }
 

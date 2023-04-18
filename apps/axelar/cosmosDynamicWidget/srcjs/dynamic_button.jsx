@@ -71,6 +71,11 @@ const TextInput = ({ configuration, value, setValue }) => {
                   })
                 );
 
+                // also add evm chains
+                args?.user?.verifiedCredentials?.map((wallet) => {
+                  wallets.push(wallet.walletName + ":" + wallet.address);
+                });
+
                 setValue(wallets.toString());
               }
             }
@@ -93,6 +98,10 @@ const TextInput = ({ configuration, value, setValue }) => {
                     }
                   })
                 );
+                // also add evm chains
+                args?.user?.verifiedCredentials?.map((wallet) => {
+                  wallets.push(wallet.walletName + ":" + wallet.address);
+                });
 
                 setValue(wallets.toString());
               }
