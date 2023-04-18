@@ -48,5 +48,7 @@ Apps Folder Structure:
 ## :tada: Application Links
 
 [Optimist Score](https://science.flipsidecrypto.xyz/optimist/) 
+
 [Solar Scored](https://science.flipsidecrypto.xyz/solarscored/)
+
 [Flow Scored](https://science.flipsidecrypto.xyz/flowscored/)
