@@ -8,6 +8,7 @@ const DynamicAppUser = (props) => {
   // const provider = useCosmosProvider();
 
   useEffect(async () => {
+    console.log("app user ");
     // console.log("user", JSON.stringify(user, null, 2));
     // console.log("user?.verifiedCredentials", user?.verifiedCredentials);
     if (user?.verifiedCredentials) {
@@ -18,15 +19,31 @@ const DynamicAppUser = (props) => {
       //   )
       // );
 
-      let axelarAddress = await window?.keplr?.getKey("axelar-dojo-1");
-      // console.log("axelar address", axelarAddress?.bech32Address);
-      let osmosisAddress = await window?.keplr?.getKey("osmosis-1");
-      props.setNewValue(
-        "axelar:" +
-          axelarAddress?.bech32Address +
-          ", osmosis:" +
-          osmosisAddress?.bech32Address
-      );
+      let wallets = [];
+      if (window?.keplr) {
+        await Promise.all(
+          props.chains.map(async (chain) => {
+            try {
+              let address = await window.keplr.getKey(chain.chainId);
+              wallets.push(chain.displayName + ":" + address?.bech32Address);
+              console.log(wallets);
+            } catch (err) {
+              console.log("error", err);
+            }
+          })
+        );
+        props.setNewValue(wallets.toString());
+      }
+
+      // let axelarAddress = await window?.keplr?.getKey("axelar-dojo-1");
+      // // console.log("axelar address", axelarAddress?.bech32Address);
+      // let osmosisAddress = await window?.keplr?.getKey("osmosis-1");
+      // props.setNewValue(
+      //   "axelar:" +
+      //     axelarAddress?.bech32Address +
+      //     ", osmosis:" +
+      //     osmosisAddress?.bech32Address
+      // );
 
       // props.setNewValue(
       //   user.verifiedCredentials.map(
