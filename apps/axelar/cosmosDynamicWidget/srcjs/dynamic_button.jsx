@@ -28,6 +28,10 @@ const TextInput = ({ configuration, value, setValue }) => {
         multiWallet: true,
         shadowDOMEnabled: false,
         environmentId: "88e7cf93-cd57-4664-b5da-9682b46074e0",
+        cssOverrides:
+          ".dynamic-widget-inline-controls { max-height = " +
+          configuration.maxHeight +
+          "rem }",
         eventsCallbacks: {
           onAuthSuccess: async (args) => {
             console.log("onAuthSuccess was called", args);
