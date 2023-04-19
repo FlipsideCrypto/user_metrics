@@ -4,7 +4,7 @@
 \alias{dynamic_buttonInput}
 \title{Dynamic Button}
 \usage{
-dynamic_buttonInput(inputId)
+dynamic_buttonInput(inputId, maxHeight = "3.5")
 }
 \description{
 React Button for multi-wallet connect using Dynamic SDK
