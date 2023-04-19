@@ -6,7 +6,7 @@
 #' @importFrom htmltools htmlDependency tags
 #'
 #' @export
-dynamic_buttonInput <- function(inputId, maxHeight = "3.5") {
+dynamic_buttonInput <- function(inputId) {
   reactR::createReactShinyInput(
     inputId,
     "dynamic_button",
@@ -17,9 +17,7 @@ dynamic_buttonInput <- function(inputId, maxHeight = "3.5") {
       package = "cosmosDynamicWidget",
       script = "dynamic_button.js"
     ),
-    configuration = list(
-      maxHeight = maxHeight
-    ),
+    configuration = list(),
     list(), htmltools::tags$div
   )
 }
