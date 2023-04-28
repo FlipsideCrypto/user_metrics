@@ -13,7 +13,8 @@ library(jsonlite)
 
 
 gs4_deauth()
-fill.box <- read_sheet("https://docs.google.com/spreadsheets/d/1Mvp5lRpHiO2MI_loRA8RYYvKHQ2ipqtM8x-tnHQqU2Q/edit#gid=0", sheet = "flowscored_boxes")
+fill.box <- read_sheet("https://docs.google.com/spreadsheets/d/1Mvp5lRpHiO2MI_loRA8RYYvKHQ2ipqtM8x-tnHQqU2Q/edit#gid=0", 
+                       sheet = "flowscored_boxes")
 fill.box <- as.data.table(fill.box)
 
 

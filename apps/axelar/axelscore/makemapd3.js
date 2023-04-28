@@ -19,19 +19,6 @@ patterns.append("image")
         .attr("x", 0)
         .attr("y", 0);
 
-/*
-var lines = r2d3.svg.selectAll('line')
-  .data(r2d3.data.edges)
-  .enter()
-  .append('line')
-  .attr('x1', d => d.x1 * width)
-  .attr('y1', d => d.y1 * height)
-  .attr('x2', d => d.x2 * width)
-  .attr('y2', d => d.y2 * height)
-  .attr('stroke', 'black')
-  .attr('stroke-width', 12.0);
-*/
-
 r2d3.svg.append('image')
    .attr('href', 'AxelarMap.svg')
    .attr('preserveAspectRatio', 'none')
@@ -132,6 +119,3 @@ var circles = r2d3.svg
     });
 
 circles.exit().remove();
-
-
-//r2d3::r2d3("makesubd3.js", data= jsonlite::toJSON(network.data))

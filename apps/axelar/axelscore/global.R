@@ -1,21 +1,23 @@
 library(shiny)
 library(r2d3)
 library(data.table)
-library(dynamicWidget)
 library(shinyBS)
+# library(devtools)
+# install_github("flipsidecrypto/user_metrics/apps/axelar/cosmosDynamicWidget")
+library(cosmosDynamicWidget)
+library(magrittr)
+library(jsonlite)
+library(stringr)
 
-load("data.RData")
+ifelse(Sys.info()[["user"]] == "rstudio-connect",
+       load("/rstudio-data/axelscore_data.RData"),
+       load("axelscore_data.RData"))
 
 
-# map.data <- fread("map_coordinates.csv")
-# map.connections <- fread("map_connections.csv")
 
-library(googlesheets4)
-gs4_deauth()
-map.data <- as.data.table(read_sheet("https://docs.google.com/spreadsheets/d/1DAYDqM1h0HSX7Otqveb8DcXNfTN8sSa4JaDDW9_F-7A/edit#gid=0", 
-                                     sheet = "map_coordinates"))
-map.connections <- as.data.table(read_sheet("https://docs.google.com/spreadsheets/d/1DAYDqM1h0HSX7Otqveb8DcXNfTN8sSa4JaDDW9_F-7A/edit#gid=0", 
-                                            sheet = "connections"))
+map.data <- fread("map_coordinates.csv")
+map.connections <- fread("map_connections.csv")
+promo.criteria <- fread("promo_criteria.csv")
 
 
 if(FALSE) {
@@ -52,8 +54,20 @@ if(FALSE) {
   )
 }
 
+trending <- fromJSON(readLines("https://flipsidecrypto.xyz/api/discover/get?d_project=axelar&d_sort=trending"))
 
+trending.links <- data.table(link_text = trending$dashboards$title[1:3],
+                             link_url = trending$dashboards$url[1:3]
+           # link_url  = paste0("https://flipsidecrypto.xyz/", 
+           #                    trending$dashboards$username[1:3], 
+           #                    "/", 
+           #                    str_replace_all(tolower(trending$dashboards$title[1:3]), " ", "-"),
+           #                    "-",
+           #                    trending$dashboards$slug[1:3])
+)
 
-#r2d3::r2d3("makesubd3.js", data= jsonlite::toJSON(network.data))
-
-
+simpleCap <- function(x) {
+  s <- strsplit(x, " ")[[1]]
+  paste(toupper(substring(s, 1, 1)), substring(s, 2),
+        sep = "", collapse = " ")
+}

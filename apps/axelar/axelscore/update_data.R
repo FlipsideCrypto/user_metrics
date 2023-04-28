@@ -2,7 +2,35 @@ source("~/data_science/util/util_functions.R")
 
 
 
-user.data <- QuerySnowflake("with satellite_token_address_coingecko_token_address_chain AS (
+user.data <- QuerySnowflake("
+-- forked from fairlabs / AXLSCORE @ https://flipsidecrypto.xyz/fairlabs/q/2023-03-20-01-22-pm-RvG52W
+
+ 
+/*
+user provides user: [address, address, address], search addresses all tables for 
+being the SENDER OR Receiver (Satellite).
+Satellite:
+  1 Point: Used 1 time or transferred <$50 of [select tokens!! Manually link to hourly price]
+  2 Points: Used 2-5 times or transferred $50-$200
+  3 Points: Used 5+ times or transferred $201+
+  Bonus Point: Transferred over $999+
+Squid: 
+  1 Point: Used 1 time or transferred <$50
+  2 Points: Used 2-5 times or transferreds or $50-$200
+  3 Points: Used 5+ times or transfe or $201+
+  Bonus Point: Swapped 10+ or over $999+
+Usage: Axlscore layer: Squid and/or Satellite (can expand in future)
+  1 Point: Have only used 1 ibc/903A61A498756EA560B85A85132D3AEE21B5DEDD41213725D22ABF276EA6945E powered app
+  2 Points: Have used 2+ ibc/903A61A498756EA560B85A85132D3AEE21B5DEDD41213725D22ABF276EA6945E powered apps
+Passport: 
+  1 Point PER unique destination
+ Bonus: +1 Have a Cosmos -> EVM
+ Bonus: +1 Have a EVM -> Cosmos
+*/
+
+-- LIMITED ACCEPTABLE TOKENS
+
+with satellite_token_address_coingecko_token_address_chain AS (
   SELECT COLUMN1 as AXL_TOKEN_ADDRESS, COLUMN2 AS CHAIN_TOKEN_ADDRESS, COLUMN3 as BLOCKCHAIN FROM (
 VALUES 
 ('uatom','ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2','cosmos'),
@@ -61,14 +89,21 @@ VALUES
 
 squid_hr_sender_og_dest_amount AS (
 SELECT 'squid' as method, DATE_TRUNC('hour', BLOCK_TIMESTAMP) as hr, tx_hash, sender, 
-token_address as AXL_TOKEN_ADDRESS, token_symbol, amount, source_chain, destination_chain
+token_address as AXL_TOKEN_ADDRESS, token_symbol, amount, 
+-- Chain Level Misspelling, NOT a Flipside data issue
+IFF(source_chain = 'avalanch', 'avalanche', source_chain) as source_chain,
+IFF(destination_chain = 'avalanch', 'avalanche', destination_chain) as destination_chain
   FROM axelar.core.ez_squid
+-- removed timestamp for production
+-- WHERE BLOCK_TIMESTAMP < '2023-03-24'
 ), 
 
 satellite_hr_sender_og_dest_amount AS (
 SELECT 'satellite' as method, DATE_TRUNC('hour', BLOCK_TIMESTAMP) as hr, tx_hash, sender, 
 token_address as AXL_TOKEN_ADDRESS, token_symbol, amount, source_chain, destination_chain
 FROM axelar.core.ez_satellite
+-- removed timestamp for production
+-- WHERE BLOCK_TIMESTAMP < '2023-03-24'
 ),
  
 all_sends AS 
@@ -88,11 +123,15 @@ SELECT *,
 coalesce(price, lag(price) IGNORE NULLS over (partition by CHAIN_TOKEN_ADDRESS, BLOCKCHAIN order by HR)) as imputed_price
 FROM all_sends_labeled_id
  LEFT JOIN (
-    SELECT TOKEN_ADDRESS as CHAIN_TOKEN_ADDRESS, 
+-- For some IBC tokens, coingecko isn't enough
+-- Use median of available provider prices to get more tokens priced!
+    SELECT * FROM (
+         SELECT TOKEN_ADDRESS as CHAIN_TOKEN_ADDRESS, 
             DATE_TRUNC('hour', HOUR) as hr, BLOCKCHAIN,
-           price
-      FROM crosschain.core.fact_hourly_prices
-    WHERE provider = 'coingecko'
+           MEDIAN(price) as price 
+      FROM crosschain.core.fact_hourly_prices  
+      GROUP BY TOKEN_ADDRESS, HOUR, BLOCKCHAIN
+        )
   ) 
 USING(CHAIN_TOKEN_ADDRESS, BLOCKCHAIN, hr)
 ),
@@ -110,12 +149,14 @@ FROM all_sends_priced
 
 -- gotta send at least $1 between chains
 SELECT SENDER, source_chain, destination_chain, method,
- max(hr) AS last_transfer,
  count(*) as n_transfers, 
  sum(amount*final_price) as total_usd
 FROM all_sends_priced_final
 GROUP BY SENDER, source_chain, destination_chain, method
-HAVING total_usd >= 1")
+HAVING total_usd >= 1 
+
+
+")
 
 # saved.user.data <- copy(user.data)
 # user.data <- copy(saved.user.data)
@@ -161,10 +202,12 @@ user.conns <- lapply(user.data[source_island != destination_island]$sender, func
     
     if(user.conns[i]$method == "squid") {
       
+      # 1 connection for squid
       all.conns <- c(all.conns, paste("squid", user.conns[i]$conn1, user.conns[i]$conn2, sep = "_"))
       
     } else {
       
+      # 1 or two for bridge
       all.conns <- c(all.conns, paste0("bridge_", c(user.conns[i]$conn1, user.conns[i]$conn2)[which(c(user.conns[i]$conn1, user.conns[i]$conn2) != "axelar")]))
       
     }
@@ -182,56 +225,7 @@ user.conns <- lapply(user.data[source_island != destination_island]$sender, func
 names(user.conns) <- user.data[source_island != destination_island]$sender
 
 
-# write a function to spit out the user persona:
 
-# Persona: Cosmonaut
-# Only transacts ibc
-# Cosmonaut Levels:
-# Base: 1tx
-# Wide-Eyed: 2 to 4 tx
-# Power: 5+ tx
-# 
-# Persona: Etherererer
-# Only transacts in evm
-# Etherererer Levels:
-# Base: 1tx
-# Wide-Eyed: 2 to 4 tx
-# Power: 5+ tx
-# 
-# Omnivore
-# Transacts in >1 island
-# Traveler: has transacted evm to ibc or ibc to evm
-# Power-User: Have done 5+ transactions across islands
-# getUserPersona <- function(tmp.user.data) {
-#   if( sum(c("ibc", "evm") %in% chain.types) == 2 ) {
-#     #"omnivore"
-#     
-#     which.subpersona <- as.numeric(sum(tmp.user.data$n_transfers) >= 5) + 1
-#     
-#     data.table(persona = c("travelling omnivore", "powerful omnivore")[which.subpersona],
-#                icon1 = "globe",
-#                icon2 = c("plane", "crown")[which.subpersona])
-#     
-#   } else if( sum("ibc" %in% chain.types) ) {
-#     "cosmonaut"
-#     
-#     which.subpersona <- max(which(sum(tmp.user.data$n_transfers) >= c(0, 2, 5)))
-#     
-#     data.table(persona = c("junior cosmonaut", "wide-eyed cosmonaut", "powerful cosmonaut")[which.subpersona],
-#                icon1 = "moon",
-#                icon2 = c("child", "eye", "crown")[which.subpersona])
-#     
-#   } else {
-#     "ethplorer"
-#     
-#     which.subpersona <- max(which(sum(tmp.user.data$n_transfers) >= c(0, 2, 5)))
-#     
-#     data.table(persona = c("junior ethplorer", "wide-eyed ethplorer", "powerful ethplorer")[which.subpersona],
-#                icon1 = "map-signs",
-#                icon2 = c("child", "eye", "crown")[which.subpersona])
-#     
-#   }
-# }
 
 # axelar stats:
 axelar.stats <- data.table(no1_destination = user.data[, .N, by = destination_chain][order(-N)][1]$destination_chain,
@@ -239,11 +233,28 @@ axelar.stats <- data.table(no1_destination = user.data[, .N, by = destination_ch
                            avg_xfer_usd = paste0("$", format(round(sum(user.data$total_usd) / sum(user.data$n_transfers)), big.mark = ",")))
 
 
-save(user.data, user.conns, axelar.stats, file = "data.RData")
+save(user.data, user.conns, axelar.stats, file = "axelscore_data.RData")
 
+# refresh csvs when needed
+if(FALSE) {
+  
+  library(googlesheets4)
+  gs4_deauth()
+  
+  map.data <- as.data.table(read_sheet("https://docs.google.com/spreadsheets/d/1DAYDqM1h0HSX7Otqveb8DcXNfTN8sSa4JaDDW9_F-7A/edit#gid=0", 
+                                       sheet = "map_coordinates"))
+  map.connections <- as.data.table(read_sheet("https://docs.google.com/spreadsheets/d/1DAYDqM1h0HSX7Otqveb8DcXNfTN8sSa4JaDDW9_F-7A/edit#gid=0", 
+                                              sheet = "connections"))
+  promo.criteria <- as.data.table(read_sheet("https://docs.google.com/spreadsheets/d/1PYe7drySZkA2mpPq8i5HJAa0XsPmad9zQ0wN2APSp9I/edit#gid=0", 
+                                              sheet = "axelscore"))
+  # whyyyyyy tho
+  class(promo.criteria$score_min) <- "character"
+  class(promo.criteria$score_max) <- "character"
+  
+  write.csv(map.data, "map_coordinates.csv", row.names = FALSE)
+  write.csv(map.connections, "map_connections.csv", row.names = FALSE)
+  write.csv(promo.criteria, "promo_criteria.csv", row.names = FALSE)
 
-
-
-
+}
 
 

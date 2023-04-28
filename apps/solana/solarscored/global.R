@@ -24,7 +24,6 @@ file.location <- ifelse(
   , '/rstudio-data/solarscored_data.RData'
   , '~/user_metrics/apps/solana/solarscored/solarscored_data.RData'
 )
-
 load(file.location)
 
 bar.plot.colors <- c("#14F195", "#B2FBDC")

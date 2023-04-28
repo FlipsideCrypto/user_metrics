@@ -12,7 +12,6 @@ fluidPage(
     tags$link(rel = "stylesheet", type = "text/css", href = "wallet.css"),
     tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css?family=Orbitron"),
     tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css?family=Exo+2"),
-    #tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css?family=Roboto+Mono"),
     tags$script(src = "rudderstack.js"),
     tags$link(rel = "icon", href = "flipside.svg")
   ),

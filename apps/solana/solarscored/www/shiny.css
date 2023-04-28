@@ -157,7 +157,7 @@ svg {
   height: 100%;
   top: 0;
   left: 0;
-}
+} %>% 
 
 #score {
   text-align: center;
@@ -368,6 +368,7 @@ These are the ticks and text of the sliders
     margin: auto;
     margin-block: 20px;
   }
+  
   #icons {
     display: flex;
     padding-left: 0;

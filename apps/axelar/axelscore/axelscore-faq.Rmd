@@ -1,0 +1,78 @@
+---
+title: "AXELscore FAQ"
+author: "Flipside"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## AXELScore User Guide & FAQs
+
+### Introduction
+
+Hello Interchain Travelers - welcome to AXELScore. AXELScore serves as your cross-chain passport of sorts, a historical record of the places you have traveled using Axelar’s cross-chain tech stack!
+
+In order to get you situated and make the most of our tool, please follow along with this user guide and product overview. 
+
+To engage with AXELScore, please click on the ‘Connect Wallet’ prompt in the top right corner of the window above. From here, you can connect both your MetaMask and Keplr wallets and begin mapping your journey throughout the interchain.
+
+### Wallet Connect & Map
+
+Once connected, various routes should overlay onto the map on the left, and outposts on each island should highlight based on your activity. It is important to note here that AXELScore is designed to map your activity via Axelar. Are you a Bad Kids Maxi but don’t see Stargaze highlighted on IBC Island? Well, if you have not transferred assets into or out of Stargaze via Axelar’s Satellite Bridge or Squid, it will not be highlighted.
+
+### Your AXELScore
+
+On the right side of the window, your score should generate simultaneously with your map. This score is driven by your usage of Axelar and its related protocols. To be scored, your transactions must be a minimum of $1.01. 
+
+Now that you are moving some size around, let’s breakdown your score:
+
+Satellite Score:
+  1 Point: Used 1 time or transferred <$50
+  2 Points: Used 2-5 times or transferred $50-$200
+  3 Points: Used 5+ times or transferred $201+
+  Bonus Point: Transferred 10+ times or over $999+
+Squid: 
+  1 Point: Used 1 time or transferred <$50
+  2 Points: Used 2-5 times or transferred $50-$200
+  3 Points: Used 5+ times or transferred $201+
+  Bonus Point: Swapped 10+ times or over $999+
+Usage: Axlscore layer: 
+  1 Point: Have only used 1 Axelar-powered app
+  2 Points: Have used 2+ Axelar powered apps
+Passport: 
+  1 Point PER unique destination
+
+### Your Persona
+
+Along with your score, you will be given a persona or user archetype, which describes your on-chain activity. Users will be categorized into one (1) of three (3) categories:
+
+Cosmonaut
+Etherererer
+Omnivore
+
+No matter where you start, the goal is to become an Omnivore - a true omnichain citizen!
+
+
+### Boost Your Score with Campaigns
+
+Are you surprised by your lack of cross-chain activity? That’s ok! Underneath your score, you will be prompted with AXELScore Campaigns that will teach you how to use Axelar to explore the interchain. For beginners, these campaigns will be more educational than anything else; however, as your score increases, you may be able to earn rewards for completing campaigns!
+
+Still have hesitations? Hit up the FAQs and we will try to get you sorted.
+
+### Frequently Asked Questions
+
+_I have used every zone in the Cosmos, why aren’t they all highlighted?_   
+
+Within AXELScore, we are focused exclusively on Axelar-derived transactions. If you have sent assets or interacted cross-chain through other means (IBC, other platforms, etc.) those will not be captured.  
+  
+_I know I have used Satellite before, why aren’t my transactions showing up?_  
+  
+If you have interacted with Satellite before and you don’t have a score, it is because we have a minimum transaction threshold of $1. In order to be scored, you must have sent at least $1.01 cross-chain.   
+  
+_I just used Squid for the first time, but my transaction isn’t showing up, what gives?_
+
+AXELScore is set to refresh every hour, so please give it some time and your map/score will update!
+
+

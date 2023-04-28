@@ -64,7 +64,7 @@ function(input, output, session) {
       
       tagList(a(class = "promptlinks", href = link.criteria$right_link, link.criteria$right_text,
                 target = "_blank",
-                onclick = "rudderstack.track('flowscored-click-right-promo')"))
+                onclick = "rudderanalytics.track('flowscored-click-right-promo')"))
       
     } else {
       
@@ -90,7 +90,7 @@ function(input, output, session) {
       # step 4 - output the link
       tagList(a(class = "promptlinks", href = full.right.link, link.criteria$right_text,
                 target = "_blank",
-                onclick = "rudderstack.track('flowscored-click-right-promo')"))
+                onclick = "rudderanalytics.track('flowscored-click-right-promo')"))
       
       } else {
         actionLink(inputId = "right_no_wallet", label = link.criteria$right_text)
@@ -101,7 +101,7 @@ function(input, output, session) {
   observeEvent(input$right_no_wallet, {
     showModal(modalDialog(
       title = "",
-      "Connect a non-dapper wallet to access this promo!",
+      "Connect a dapper wallet to access this promo!",
       footer = modalButton("close")
     ))
     
@@ -116,7 +116,7 @@ function(input, output, session) {
       # if we have no connected address OR there is no addy type, just output the link
       tagList(a(class = "promptlinks", href = link.criteria$left_link, link.criteria$left_text,
                 target = "_blank",
-                onclick = "rudderstack.track('flowscored-click-left-promo')"))
+                onclick = "rudderanalytics.track('flowscored-click-left-promo')"))
       
     } else {
       
@@ -145,7 +145,7 @@ function(input, output, session) {
         # step 4 - output the link
         tagList(a(class = "promptlinks", href = full.left.link, link.criteria$left_text,
                   target = "_blank",
-                  onclick = "rudderstack.track('flowscored-click-left-promo')"))
+                  onclick = "rudderanalytics.track('flowscored-click-left-promo')"))
         
       } else {
         
@@ -160,7 +160,7 @@ function(input, output, session) {
   observeEvent(input$left_no_wallet, {
     showModal(modalDialog(
       title = "",
-      "Connect a non-dapper wallet to access this promo!",
+      "Connect a dapper wallet to access this promo!",
       footer = modalButton("close")
     ))
   })
