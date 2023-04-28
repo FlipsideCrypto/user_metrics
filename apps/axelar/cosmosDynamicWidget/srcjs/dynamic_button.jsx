@@ -26,7 +26,6 @@ const TextInput = ({ configuration, value, setValue }) => {
       settings={{
         appName: "CosmoScored",
         multiWallet: true,
-        shadowDOMEnabled: false,
         environmentId: "88e7cf93-cd57-4664-b5da-9682b46074e0",
         eventsCallbacks: {
           onAuthSuccess: async (args) => {

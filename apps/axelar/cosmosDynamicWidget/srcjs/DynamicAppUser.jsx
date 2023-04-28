@@ -6,8 +6,6 @@ const DynamicAppUser = (props) => {
   const { user } = useDynamicContext();
 
   useEffect(async () => {
-    console.log("app user ");
-
     if (user?.verifiedCredentials) {
       let wallets = [];
       if (window?.keplr) {

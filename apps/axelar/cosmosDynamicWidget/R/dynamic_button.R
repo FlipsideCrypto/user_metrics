@@ -17,7 +17,7 @@ dynamic_buttonInput <- function(inputId) {
       package = "cosmosDynamicWidget",
       script = "dynamic_button.js"
     ),
-    "",
+    configuration = list(),
     list(), htmltools::tags$div
   )
 }
