@@ -16,21 +16,21 @@ user_address | protocol | n_deposits | n_withdrawals | dep_usd_volume | wdraw_us
 
 with deposits AS ( 
 SELECT FROM_ADDRESS as USER_ADDRESS, platform, TO_ADDRESS as pool_address, symbol, sum(AMOUNT) as amount_deposited_lp, count(*) as num_deposits, sum(amount_usd) as  dep_usd_volume
-FROM optimism.core.ez_token_transfers tr
-  left join (select distinct contract_address, platform from optimism.core.ez_dex_swaps) pl
+FROM avalanche.core.ez_token_transfers tr
+  left join (select distinct contract_address, platform from avalanche.core.ez_dex_swaps) pl
   on tr.TO_ADDRESS = pl.contract_address
-WHERE TO_ADDRESS IN (SELECT contract_address FROM optimism.core.ez_dex_swaps) AND 
-TX_HASH NOT IN (SELECT TX_HASH FROM optimism.core.ez_dex_swaps)
+WHERE TO_ADDRESS IN (SELECT contract_address FROM avalanche.core.ez_dex_swaps) AND 
+TX_HASH NOT IN (SELECT TX_HASH FROM avalanche.core.ez_dex_swaps)
 GROUP BY USER_ADDRESS, platform, symbol, TO_ADDRESS
 ), 
 
 withdraws AS (
 SELECT TO_ADDRESS as USER_ADDRESS, platform, FROM_ADDRESS as pool_address, symbol, sum(AMOUNT) as amount_withdrawn_lp, count(*) as num_withdrawals, sum(amount_usd) as  wdraw_usd_volume
-FROM optimism.core.ez_token_transfers tr
-left join (select distinct contract_address, platform from optimism.core.ez_dex_swaps) pl
+FROM avalanche.core.ez_token_transfers tr
+left join (select distinct contract_address, platform from avalanche.core.ez_dex_swaps) pl
   on tr.from_address = pl.contract_address
-WHERE FROM_ADDRESS IN (SELECT contract_address FROM optimism.core.ez_dex_swaps) AND 
-TX_HASH NOT IN (SELECT TX_HASH FROM optimism.core.ez_dex_swaps)
+WHERE FROM_ADDRESS IN (SELECT contract_address FROM avalanche.core.ez_dex_swaps) AND 
+TX_HASH NOT IN (SELECT TX_HASH FROM avalanche.core.ez_dex_swaps)
 GROUP BY USER_ADDRESS, platform, symbol, FROM_ADDRESS 
 ),
 
