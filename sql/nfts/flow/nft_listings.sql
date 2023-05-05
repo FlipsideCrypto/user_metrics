@@ -55,5 +55,5 @@ listings
 WHERE
 user_address NOT IN (SELECT account_address FROM FLOW.CORE.DIM_CONTRACT_LABELS)
 AND
-user_address NOT IN (SELECT address FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS WHERE blockchain = 'flow')
+user_address NOT IN (SELECT address FROM crosschain.core.ADDRESS_LABELS WHERE blockchain = 'flow')
 GROUP BY user_address

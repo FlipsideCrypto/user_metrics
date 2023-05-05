@@ -14,7 +14,7 @@ tx_succeeded = TRUE
 AND 
 proposer NOT IN (SELECT account_address FROM FLOW.CORE.DIM_CONTRACT_LABELS)
 AND
-proposer NOT IN (SELECT address FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS WHERE blockchain = 'flow')
+proposer NOT IN (SELECT address FROM crosschain.core.ADDRESS_LABELS WHERE blockchain = 'flow')
 GROUP BY
 proposer
 

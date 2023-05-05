@@ -12,7 +12,7 @@ labs AS (
 SELECT
 sender AS address, project_name, 'dep' AS type
 FROM FLOW.CORE.EZ_TOKEN_TRANSFERS tt
-JOIN FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS al ON tt.recipient = al.address
+JOIN crosschain.core.ADDRESS_LABELS al ON tt.recipient = al.address
 GROUP BY sender, project_name
 
   UNION
@@ -21,7 +21,7 @@ SELECT
   address, 
   project_name,
   'hot' AS type
-  FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS 
+  FROM crosschain.core.ADDRESS_LABELS 
   WHERE blockchain = 'flow' AND label_type = 'cex' AND label_subtype = 'hot_wallet'
 ),
 deps AS (

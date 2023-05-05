@@ -10,7 +10,7 @@ WITH sells AS (
   sum(price) AS token_sell_volume,
   sum(price_usd) AS sell_usd_volume
   FROM
-  optimism.core.ez_nft_sales ns
+  polygon.core.ez_nft_sales ns
   WHERE
   block_timestamp > current_date - 180
   AND
@@ -30,7 +30,7 @@ buys AS (
   sum(price) AS token_buy_volume,
   sum(price_usd) AS buy_usd_volume
   FROM
-  optimism.core.ez_nft_sales ns
+  polygon.core.ez_nft_sales ns
   WHERE
   block_timestamp > current_date - 180
   AND

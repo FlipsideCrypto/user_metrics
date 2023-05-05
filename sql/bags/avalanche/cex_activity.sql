@@ -6,8 +6,8 @@ count(tt.tx_hash) AS n_withdrawals,
 sum(raw_amount) / pow(10, decimals) AS wdraw_token_volume,
 sum(raw_amount) / pow(10, decimals) * price AS wdraw_usd_volume
 FROM
-polygon.core.fact_token_transfers tt
-JOIN polygon.core.FACT_HOURLY_TOKEN_PRICES pp 
+avalanche.core.fact_token_transfers tt
+JOIN avalanche.core.FACT_HOURLY_TOKEN_PRICES pp 
 ON date_trunc('hour', tt.block_timestamp) = pp.hour
 AND tt.contract_address = pp.token_address
 WHERE
@@ -16,12 +16,12 @@ AND
 from_address IN
 (SELECT address 
  FROM crosschain.core.ADDRESS_LABELS
- WHERE blockchain = 'polygon' AND label_type = 'cex' AND label_subtype = 'hot_wallet')
+ WHERE blockchain = 'avalanche' AND label_type = 'cex' AND label_subtype = 'hot_wallet')
 AND
 to_address NOT IN (
  SELECT address 
  FROM crosschain.core.ADDRESS_LABELS
- WHERE blockchain != 'polygon')
+ WHERE blockchain != 'avalanche')
 GROUP BY user_address, token_contract, token_symbol, decimals, price),
 
 deps AS (
@@ -33,8 +33,8 @@ count(tt.tx_hash) AS n_deposits,
 sum(raw_amount) / pow(10, decimals) AS dep_token_volume,
 sum(raw_amount) / pow(10, decimals) * price AS dep_usd_volume
 FROM
-polygon.core.fact_token_transfers tt
-JOIN polygon.core.FACT_HOURLY_TOKEN_PRICES pp 
+avalanche.core.fact_token_transfers tt
+JOIN avalanche.core.FACT_HOURLY_TOKEN_PRICES pp 
 ON date_trunc('hour', tt.block_timestamp) = pp.hour
 AND tt.contract_address = pp.token_address
 WHERE
@@ -43,12 +43,12 @@ AND
 to_address IN
 (SELECT address 
  FROM crosschain.core.ADDRESS_LABELS
- WHERE blockchain = 'polygon' AND label_type = 'cex' AND label_subtype = 'deposit_wallet')
+ WHERE blockchain = 'avalanche' AND label_type = 'cex' AND label_subtype = 'deposit_wallet')
 AND
 from_address NOT IN (
  SELECT address 
  FROM crosschain.core.ADDRESS_LABELS
- WHERE blockchain != 'polygon')
+ WHERE blockchain != 'avalanche')
 GROUP BY user_address, token_contract, token_symbol, decimals, price
  )
 SELECT

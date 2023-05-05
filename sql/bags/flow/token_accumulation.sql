@@ -37,7 +37,7 @@ xfers_in AS (
   AND 
   recipient NOT IN (SELECT account_address FROM FLOW.CORE.DIM_CONTRACT_LABELS)
   AND
-  recipient NOT IN (SELECT address FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS WHERE blockchain = 'flow')
+  recipient NOT IN (SELECT address FROM crosschain.core.ADDRESS_LABELS WHERE blockchain = 'flow')
   AND
   amount != 0.001
   AND
@@ -135,7 +135,7 @@ xfers_out AS (
   AND 
   recipient NOT IN (SELECT account_address FROM FLOW.CORE.DIM_CONTRACT_LABELS)
   AND
-  recipient NOT IN (SELECT address FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS WHERE blockchain = 'flow')
+  recipient NOT IN (SELECT address FROM crosschain.core.ADDRESS_LABELS WHERE blockchain = 'flow')
   GROUP BY user_addressa, symbol, tt.token_contract
 ),
 

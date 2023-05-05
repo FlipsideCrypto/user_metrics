@@ -15,12 +15,12 @@ block_timestamp > current_date - 180
 AND
 from_address IN
 (SELECT address 
- FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS
+ FROM crosschain.core.ADDRESS_LABELS
  WHERE blockchain = 'optimism' AND label_type = 'cex' AND label_subtype = 'hot_wallet')
 AND
 to_address NOT IN (
  SELECT address 
- FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS
+ FROM crosschain.core.ADDRESS_LABELS
  WHERE blockchain != 'optimism')
 GROUP BY user_address, token_contract, token_symbol, decimals, price),
 
@@ -42,12 +42,12 @@ block_timestamp > current_date - 180
 AND
 to_address IN
 (SELECT address 
- FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS
+ FROM crosschain.core.ADDRESS_LABELS
  WHERE blockchain = 'optimism' AND label_type = 'cex' AND label_subtype = 'deposit_wallet')
 AND
 from_address NOT IN (
  SELECT address 
- FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS
+ FROM crosschain.core.ADDRESS_LABELS
  WHERE blockchain != 'optimism')
 GROUP BY user_address, token_contract, token_symbol, decimals, price
  )

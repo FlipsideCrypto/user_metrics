@@ -23,7 +23,7 @@ SELECT owner AS user_address, NFT_ADDRESS AS nf_token_contract, PROJECT_NAME as 
     CASE
     WHEN user_address IN (SELECT DISTINCT address FROM CROSSCHAIN.CORE.ADDRESS_TAGS WHERE BLOCKCHAIN = 'ethereum' AND TAG_NAME IN ('gnosis safe address')) THEN 'gnosis safe'
     WHEN user_address IN (SELECT DISTINCT address FROM CROSSCHAIN.CORE.ADDRESS_TAGS WHERE BLOCKCHAIN = 'ethereum' AND TAG_NAME IN ('contract address')) THEN 'contract'
-    WHEN user_address IN (SELECT DISTINCT address FROM flipside_prod_db.crosschain.address_labels WHERE label_type = 'cex') THEN 'EOA-cex'
+    WHEN user_address IN (SELECT DISTINCT address FROM crosschain.core.ADDRESS_LABELS WHERE label_type = 'cex') THEN 'EOA-cex'
     WHEN user_address IN (SELECT DISTINCT address FROM CROSSCHAIN.CORE.ADDRESS_TAGS WHERE BLOCKCHAIN = 'ethereum' AND TAG_NAME IN ('active on ethereum last 7')) THEN 'EOA'
     ELSE 'EOA-0tx'
 END as address_type

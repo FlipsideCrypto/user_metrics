@@ -12,7 +12,7 @@ SELECT
   AND
   user_address NOT IN (
    SELECT address 
-   FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS
+   FROM crosschain.core.ADDRESS_LABELS
    WHERE blockchain = 'optimism')
   GROUP BY user_address
   

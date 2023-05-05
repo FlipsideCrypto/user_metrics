@@ -19,6 +19,6 @@ sum(net_delegation) AS stake_token_volume,
 0 AS unstake_usd_volume
 FROM format_delegations
 WHERE
-delegator NOT IN (SELECT address FROM FLIPSIDE_PROD_DB.CROSSCHAIN.ADDRESS_LABELS where blockchain = 'optimism')
+delegator NOT IN (SELECT address FROM crosschain.core.ADDRESS_LABELS where blockchain = 'optimism')
 GROUP BY 
 delegator
