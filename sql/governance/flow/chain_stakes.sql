@@ -1,9 +1,12 @@
 WITH daily_prices AS (
-  SELECT date_trunc('day', timestamp) AS day,
-  AVG(price_usd) AS price
-  FROM flow.core.fact_prices
-  WHERE token_contract = 'A.1654653399040a61.FlowToken'
-  GROUP BY day
+SELECT 
+  token as symbol,
+  id as token_contract,
+  date_trunc('day', recorded_hour) AS day,
+  AVG(close) AS price
+FROM flow.core.fact_hourly_prices
+WHERE recorded_hour > current_date - 91
+GROUP BY symbol, token_contract, day
 ),
 
 stakes AS (
