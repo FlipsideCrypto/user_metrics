@@ -21,6 +21,7 @@ FROM optimism.core.ez_token_transfers tr
   on tr.TO_ADDRESS = pl.contract_address
 WHERE TO_ADDRESS IN (SELECT contract_address FROM optimism.core.ez_dex_swaps) AND 
 TX_HASH NOT IN (SELECT TX_HASH FROM optimism.core.ez_dex_swaps)
+and block_timestamp > current_date - 90
 GROUP BY USER_ADDRESS, platform, symbol, TO_ADDRESS
 ), 
 
@@ -31,6 +32,7 @@ left join (select distinct contract_address, platform from optimism.core.ez_dex_
   on tr.from_address = pl.contract_address
 WHERE FROM_ADDRESS IN (SELECT contract_address FROM optimism.core.ez_dex_swaps) AND 
 TX_HASH NOT IN (SELECT TX_HASH FROM optimism.core.ez_dex_swaps)
+and block_timestamp > current_date - 90
 GROUP BY USER_ADDRESS, platform, symbol, FROM_ADDRESS 
 ),
 

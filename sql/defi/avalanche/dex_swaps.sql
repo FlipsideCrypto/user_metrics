@@ -8,7 +8,7 @@ FROM avalanche.CORE.EZ_DEX_SWAPS
 WHERE BLOCK_TIMESTAMP >= DATEADD('day',
 -- Last N Days parameter, default -1000
 -- -{{last_n_days}},
--1000, 
+-90, 
   CURRENT_DATE())
   GROUP BY user_address, protocol, token_contract, TOKEN_SYMBOL
 ), 
@@ -20,7 +20,7 @@ FROM avalanche.CORE.EZ_DEX_SWAPS
   WHERE BLOCK_TIMESTAMP >= DATEADD('day',
 -- Last N Days parameter, default -1000
 -- -{{last_n_days}},
--1000, 
+-90, 
    CURRENT_DATE())
   GROUP BY user_address, protocol, token_contract, TOKEN_SYMBOL
 )
