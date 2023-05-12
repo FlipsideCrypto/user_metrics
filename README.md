@@ -52,3 +52,5 @@ Apps Folder Structure:
 [Solar Scored](https://science.flipsidecrypto.xyz/solarscored/)
 
 [Flow Scored](https://science.flipsidecrypto.xyz/flowscored/)
+
+[Axel Scored](https://science.flipsidecrypto.xyz/axelscore/)
