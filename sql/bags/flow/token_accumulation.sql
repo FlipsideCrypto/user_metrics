@@ -6,17 +6,16 @@
 
 WITH daily_prices AS (
 SELECT 
-  symbol,
-  token_contract,
-  date_trunc('day', timestamp) AS day,
-  AVG(price_usd) AS price
-FROM flow.core.fact_prices
-  --WHERE token_contract = 'A.16546533918040a61.FlowToken'
-WHERE timestamp > current_date - 91
+  token as symbol,
+  id as token_contract,
+  date_trunc('day', recorded_hour) AS day,
+  AVG(close) AS price
+FROM flow.core.fact_hourly_prices
+WHERE recorded_hour > current_date - 91
 GROUP BY symbol, token_contract, day
 ),
 missing_prices AS (
-  SELECT currency FROM "FLOW"."CORE"."EZ_NFT_SALES" WHERE currency NOT IN (select token_contract from "FLOW"."CORE"."FACT_PRICES") group by currency
+  SELECT currency FROM "FLOW"."CORE"."EZ_NFT_SALES" WHERE currency NOT IN (select id as token_contract from flow.core.fact_hourly_prices) group by currency
 ),
 
 xfers_in AS (
@@ -31,7 +30,7 @@ xfers_in AS (
   JOIN daily_prices dp ON date_trunc('day', tt.block_timestamp) = dp.day
       AND tt.token_contract = dp.token_contract
   WHERE 
-  block_timestamp >= current_date - 180
+  block_timestamp >= current_date - 90
   AND
   tx_succeeded = TRUE
   AND 
@@ -54,11 +53,11 @@ dex_buys AS (
   sum(token_in_amount) AS token_in_volume,
   sum(token_in_amount * price) AS usd_in_volume
   FROM
-  flow.core.ez_dex_swaps ds
+  flow.core.ez_swaps ds
   JOIN daily_prices dp ON date_trunc('day', ds.block_timestamp) = dp.day
       AND ds.token_in_contract = dp.token_contract
   WHERE
-  block_timestamp > current_date - 180
+  block_timestamp > current_date - 90
   GROUP BY 
   trader, symbol, token_in_contract
 ),
@@ -80,7 +79,7 @@ nft_sells AS (
   JOIN daily_prices dp ON date_trunc('day', ns.block_timestamp) = dp.day
       AND ns.currency = dp.token_contract
   WHERE
-  block_timestamp > current_date - 180
+  block_timestamp > current_date - 90
   GROUP BY 
   seller, token_symbola, currency
 ),
@@ -94,15 +93,15 @@ SELECT
   sum(amount) AS token_in_volume,
   sum(amount * price) AS usd_in_volume
   FROM
-  flow.core.fact_bridge_transactions bt
+  flow.core.ez_bridge_transactions bt
   JOIN daily_prices dp ON date_trunc('day', bt.block_timestamp) = dp.day
     AND bt.token_contract = dp.token_contract
   WHERE
-  block_timestamp > current_date - 180
+  block_timestamp > current_date - 90
   AND 
   direction = 'inbound'
   AND
-  tx_id NOT IN (SELECT tx_id FROM flow.core.fact_bridge_transactions WHERE block_timestamp > current_date - 180)
+  tx_id NOT IN (SELECT tx_id FROM flow.core.ez_bridge_transactions WHERE block_timestamp > current_date - 90)
   GROUP BY 
   user_addressa, symbol, bt.token_contract
 ),
@@ -129,7 +128,7 @@ xfers_out AS (
   JOIN daily_prices dp ON date_trunc('day', tt.block_timestamp) = dp.day
       AND tt.token_contract = dp.token_contract
   WHERE 
-  block_timestamp >= current_date - 180
+  block_timestamp >= current_date - 90
   AND
   tx_succeeded = TRUE
   AND 
@@ -148,11 +147,11 @@ dex_sells AS (
   sum(token_in_amount) AS token_out_volume,
   sum(token_in_amount * price) AS usd_out_volume
   FROM
-  flow.core.ez_dex_swaps ds
+  flow.core.ez_swaps ds
   JOIN daily_prices dp ON date_trunc('day', ds.block_timestamp) = dp.day
       AND ds.token_out_contract = dp.token_contract
   WHERE
-  block_timestamp > current_date - 180
+  block_timestamp > current_date - 90
   GROUP BY 
   trader, symbol, token_out_contract
 ),
@@ -174,7 +173,7 @@ nft_buys AS (
   JOIN daily_prices dp ON date_trunc('day', ns.block_timestamp) = dp.day
       AND ns.currency = dp.token_contract
   WHERE
-  block_timestamp > current_date - 180
+  block_timestamp > current_date - 90
   GROUP BY 
   buyer, token_symbola, currency
 ),
@@ -188,15 +187,15 @@ SELECT
   sum(amount) AS token_out_volume,
   sum(amount * price) AS usd_out_volume
   FROM
-  flow.core.fact_bridge_transactions bt
+  flow.core.ez_bridge_transactions bt
   JOIN daily_prices dp ON date_trunc('day', bt.block_timestamp) = dp.day
     AND bt.token_contract = dp.token_contract
   WHERE
-  block_timestamp > current_date - 180
+  block_timestamp > current_date - 90
   AND 
   direction = 'outbound'
   AND
-  tx_id NOT IN (SELECT tx_id FROM flow.core.fact_bridge_transactions WHERE block_timestamp > current_date - 180)
+  tx_id NOT IN (SELECT tx_id FROM flow.core.ez_bridge_transactions WHERE block_timestamp > current_date - 90)
   GROUP BY 
   user_addressa, symbol, bt.token_contract
 ),

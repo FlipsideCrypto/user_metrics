@@ -1,11 +1,11 @@
 WITH daily_prices AS (
 SELECT 
-  symbol,
-  token_contract,
-  date_trunc('day', timestamp) AS day,
-  AVG(price_usd) AS price
-FROM flow.core.fact_prices
-WHERE timestamp > current_date - 91
+  token as symbol,
+  id as token_contract,
+  date_trunc('day', recorded_hour) AS day,
+  AVG(close) AS price
+FROM flow.core.fact_hourly_prices
+WHERE recorded_hour > current_date - 91
 GROUP BY symbol, token_contract, day
 ),
 labs AS (
@@ -40,12 +40,12 @@ SELECT
   JOIN daily_prices dp ON date_trunc('day', tt.block_timestamp) = dp.day
     AND tt.token_contract = dp.token_contract
   WHERE
-  block_timestamp > current_date - 180
+  block_timestamp > current_date - 90
   AND
   tx_succeeded = 'TRUE'
   AND 
   type = 'dep'
-  AND tx_id NOT IN (SELECT tx_id FROM flow.core.fact_bridge_transactions WHERE block_timestamp > current_date - 180)
+  AND tx_id NOT IN (SELECT tx_id FROM flow.core.ez_bridge_transactions WHERE block_timestamp > current_date - 90)
   GROUP BY 
   user_address, symbol, tt.token_contract, project_name
   ),
@@ -65,13 +65,13 @@ SELECT
   JOIN daily_prices dp ON date_trunc('day', tt.block_timestamp) = dp.day
     AND tt.token_contract = dp.token_contract
   WHERE
-  block_timestamp > current_date - 180
+  block_timestamp > current_date - 90
   AND
   tx_succeeded = 'TRUE'
   AND 
   type = 'dep'
   AND
-  tx_id NOT IN (SELECT tx_id FROM flow.core.fact_bridge_transactions WHERE block_timestamp > current_date - 180)
+  tx_id NOT IN (SELECT tx_id FROM flow.core.ez_bridge_transactions WHERE block_timestamp > current_date - 90)
   GROUP BY 
   user_address, symbol, tt.token_contract, project_name
   )
