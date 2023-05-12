@@ -24,6 +24,7 @@ WHERE TO_ADDRESS IN (SELECT POOL_ADDRESS FROM ethereum.core.dim_dex_liquidity_po
   -- This may also miss deposit aggregation, where you transfer to a router that then transfers
   -- to LPs, e.g., Gamma.xyz Uniswap v3 Vaults.
 TX_HASH NOT IN (SELECT TX_HASH FROM ethereum.core.ez_dex_swaps)
+and block_timestamp > current_date - 90
 GROUP BY USER_ADDRESS, CONTRACT_ADDRESS, symbol, TO_ADDRESS
 ), 
 
@@ -35,6 +36,7 @@ WHERE FROM_ADDRESS IN (SELECT POOL_ADDRESS FROM ethereum.core.dim_dex_liquidity_
   -- This may also miss deposit aggregation, where you transfer to a router that then transfers
   -- to LPs, e.g., Gamma.xyz Uniswap v3 Vaults.
 TX_HASH NOT IN (SELECT TX_HASH FROM ethereum.core.ez_dex_swaps)
+and block_timestamp > current_date - 90
 GROUP BY USER_ADDRESS, CONTRACT_ADDRESS, symbol, FROM_ADDRESS 
 ),
 
