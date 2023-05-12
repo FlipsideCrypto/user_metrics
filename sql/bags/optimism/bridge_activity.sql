@@ -1,229 +1,63 @@
-  WITH optimism_prices AS (
-SELECT DATE_TRUNC('week', hour) as day, token_address, symbol, 
-AVG(price) / AVG(POWER(10, decimals)) as price_multiplier 
-FROM optimism.core.fact_hourly_token_prices
-GROUP BY day, token_address, symbol
-),
+-- user_address | bridge_name | token_contract | token_symbol | n_in | n_out | in_token_volume | in_usd_volume | out_token_volume | out_usd_volume
+-- PLACE Bridges USING PLACEHOLDER BELOW 
 
-eth_price AS (
-SELECT DATE_TRUNC('week', hour) as day, AVG(price) as price_usd 
-FROM ethereum.core.fact_hourly_token_prices
-WHERE token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-GROUP BY day 
-),
+-- looking at defillama's rankings as of april 2023
+-- top 2 bridges are multichain and stargate
+-- next are celer hop synapse
+-- the canonical bridge should also be covered if possible
 
-out_optimism_rawa AS (
-SELECT DISTINCT DATE_TRUNC('week', a.block_timestamp) as day, a.contract_address, a.origin_from_address as user_address, 
-COUNT(*) as num_transactions_out, SUM(raw_amount) as vol, SUM(tx_fee) as sum_fee_eth_out
-FROM optimism.core.fact_token_transfers a LEFT JOIN optimism.core.fact_transactions b 
-ON a.tx_hash = b.tx_hash
-WHERE a.to_address = '0xa420b2d1c0841415a695b81e5b867bcd07dff8c9'
-AND a.origin_function_signature = '0x49228978'
-AND a.contract_address IS NOT NULL 
-AND raw_amount IS NOT NULL 
-  and a.block_timestamp >= current_date - 180
-  and b.block_timestamp >= current_date - 180
-GROUP BY day, a.contract_address, a.origin_from_address
-),
-
-out_optimisma AS (
-SELECT a.day, symbol, user_address, num_transactions_out, vol * price_multiplier as vol_usd_out, 
-sum_fee_eth_out, sum_fee_eth_out * price_usd as eth_fees_usd_out
-FROM out_optimism_rawa a LEFT JOIN optimism_prices b 
-ON a.day = b.day AND a.contract_address = b.token_address
-LEFT JOIN eth_price c
-ON a.day = c.day 
-),
-
-in_optimism_rawa AS (
-SELECT DATE_TRUNC('week', a.block_timestamp) as day, a.contract_address, a.origin_from_address as user_address, 
-COUNT(*) as num_transactions_in, SUM(raw_amount) as vol, SUM(tx_fee) as sum_fee_eth_in
-FROM optimism.core.fact_token_transfers a LEFT JOIN optimism.core.fact_transactions b 
-ON a.tx_hash = b.tx_hash
-WHERE a.to_address = '0xa420b2d1c0841415a695b81e5b867bcd07dff8c9'
-AND a.origin_function_signature = '0xac9650d8'
-AND a.contract_address IS NOT NULL 
-AND raw_amount IS NOT NULL 
-  and a.block_timestamp >= current_date - 180
-  and b.block_timestamp >= current_date - 180
-GROUP BY day, a.contract_address, a.origin_from_address
-),
-
-in_optimisma AS (
-SELECT a.day, symbol, user_address, num_transactions_in, vol * price_multiplier as vol_usd_in, 
-sum_fee_eth_in, sum_fee_eth_in * price_usd as eth_fees_usd_in
-FROM in_optimism_rawa a LEFT JOIN optimism_prices b 
-ON a.day = b.day AND a.contract_address = b.token_address
-LEFT JOIN eth_price c
-ON a.day = c.day 
-),
-
-selecta AS (
-SELECT 
-    COALESCE(a.day, b.day) as day, 
-    'Across' as bridge, 
-    COALESCE(a.user_address, b.user_address) as user_address, 
-    COALESCE(num_transactions_in, 0) + COALESCE(num_transactions_out, 0) as num_transactions, 
-    COALESCE(vol_usd_in, 0) + COALESCE(vol_usd_out, 0) as total_vol_usd, 
-    COALESCE(vol_usd_in, 0) - COALESCE(vol_usd_out, 0) as net_vol_in_usd, 
-    COALESCE(vol_usd_in, 0) as vol_usd_in, 
-    COALESCE(vol_usd_out, 0) as vol_usd_out, 
-    COALESCE(eth_fees_usd_out, 0) + COALESCE(eth_fees_usd_in, 0) as eth_fees 
-FROM 
-    in_optimisma a 
-    FULL JOIN out_optimisma b 
-        ON a.day = b.day and a.user_address = b.user_address
-),
-
-optimism_pricess AS (
-SELECT DATE_TRUNC('DAY', hour) as day, token_address, symbol, 
-AVG(price) / AVG(POWER(10, decimals)) as price_multiplier 
-FROM optimism.core.fact_hourly_token_prices
-GROUP BY day, token_address, symbol
-),
-
-out_optimism_raws AS (
-SELECT DATE_TRUNC('week', a.block_timestamp) as day, a.contract_address, a.origin_from_address as user_address,
-COUNT(*) as num_transactions_out, SUM(raw_amount) as vol, SUM(tx_fee) as sum_fee_eth_out
-FROM optimism.core.fact_token_transfers a LEFT JOIN optimism.core.fact_transactions b 
-ON a.tx_hash = b.tx_hash
-WHERE (a.from_address = LOWER('0x470f9522ff620eE45DF86C58E54E6A645fE3b4A7')
-AND a.to_address = LOWER('0xaf41a65f786339e7911f4acdad6bd49426f2dc6b'))
-OR a.to_address = LOWER('0x470f9522ff620eE45DF86C58E54E6A645fE3b4A7')
-  and a.block_timestamp >= current_date - 180
-  and b.block_timestamp >= current_date - 180
-GROUP BY day, a.contract_address, a.origin_from_address
-),
-
-out_optimisms AS (
-SELECT a.day, symbol, user_address, num_transactions_out, vol * price_multiplier as vol_usd_out, 
-sum_fee_eth_out * price_usd as eth_fees_usd_out
-FROM out_optimism_raws a LEFT JOIN optimism_pricess b 
-ON a.day = b.day AND a.contract_address = b.token_address
-LEFT JOIN eth_price c ON a.day = c.day 
-WHERE symbol IS NOT NULL 
-),
-
-in_optimism_raws AS (
-SELECT DATE_TRUNC('week', a.block_timestamp) as day, a.contract_address, a.to_address as user_address, 
-COUNT(*) as num_transactions_in, SUM(raw_amount) as vol, SUM(tx_fee) as sum_fee_eth_in
-FROM optimism.core.fact_token_transfers a LEFT JOIN optimism.core.fact_transactions b
-ON a.tx_hash = b.tx_hash
-WHERE a.from_address = '0xaf41a65f786339e7911f4acdad6bd49426f2dc6b'
-  and a.block_timestamp >= current_date - 180
-  and b.block_timestamp >= current_date - 180
-GROUP BY day, a.contract_address, a.to_address
-),
-
-in_optimisms AS (
-SELECT a.day, symbol, user_address, num_transactions_in, vol * price_multiplier as vol_usd_in, 
-sum_fee_eth_in * price_usd as eth_fees_usd_in
-FROM in_optimism_raws a LEFT JOIN optimism_prices b 
-ON a.day = b.day AND a.contract_address = b.token_address
-LEFT JOIN eth_price c ON a.day = c.day 
-WHERE symbol IS NOT NULL 
-),
-
-selects AS (
-   SELECT COALESCE(a.day, b.day) as day, 
-    'Synapse' as bridge, 
-    COALESCE(a.user_address, b.user_address) as user_address, 
-    COALESCE(num_transactions_in, 0) + COALESCE(num_transactions_out, 0) as num_transactions, 
-    COALESCE(vol_usd_in, 0) + COALESCE(vol_usd_out, 0) as total_vol_usd, 
-    COALESCE(vol_usd_in, 0) - COALESCE(vol_usd_out, 0) as net_vol_in_usd, 
-    COALESCE(vol_usd_in, 0) as vol_usd_in, 
-    COALESCE(vol_usd_out, 0) as vol_usd_out, 
-    COALESCE(eth_fees_usd_out, 0) + COALESCE(eth_fees_usd_in, 0) as eth_fees 
-FROM out_optimisms a FULL JOIN in_optimisms b
-ON a.day = b.day and a.user_address = b.user_address
-),
-synapse_across as (
-
-SELECT *
-FROM selecta
-
-UNION
-
-SELECT *
-FROM selects
-
-),
-hop_bridge as ( select tx_hash
-from ethereum.core.fact_event_logs
-where event_inputs:chainId = '10' and contract_address in (lower('0xb8901acb165ed027e32754e0ffe830802919727f')
-, lower('0x3666f603cc164936c1b87e207f36beba4ac5f18a'), lower('0x3e4a3a4796d16c0cd582c382691998f7c06420b6'),
-lower('0x3d4cc8a61c7528fd86c55cfe061a78dcba48edd1'), lower('0x22b1cbb8d98a01a3b71d034bb899775a76eb1cc2')))
-,
-hop_amount as ( select block_timestamp, origin_from_address, tx_hash, amount_usd
-from ethereum.core.ez_eth_transfers
-where tx_hash in ( select tx_hash from hop_bridge)
-UNION
-select block_timestamp, origin_from_address, tx_hash, amount_usd
-from ethereum.core.ez_token_transfers
-where tx_hash in ( select tx_hash from hop_bridge))
-,
-native_bridge as ( select block_timestamp, origin_from_address, tx_hash, amount_usd
-from ethereum.core.ez_eth_transfers
-where eth_to_address = lower('0x99c9fc46f92e8a1c0dec1b1747d010903e884be1')
-UNION
-select block_timestamp, origin_from_address, tx_hash, amount_usd
-from ethereum.core.ez_token_transfers
-where to_address = '0x99c9fc46f92e8a1c0dec1b1747d010903e884be1')
-,
-final as 
-( select 'hop' as bridge, *
-  from hop_amount
-  UNION
-  select 'canonical' as bridge, *
-  from native_bridge
-),
-hop_op_bridge_in as (
- select DISTINCT origin_from_address as USER_ADDRESS, 
- bridge,
-  count(DISTINCT(tx_hash)) as NUM_TRANSACTIONS,
-sum(amount_usd) as vol_usd_in
-from final
-where block_timestamp::date >= CURRENT_DATE - 180
-group by 1,2
-),
-base_op_bout as (
-select distinct 
-  block_timestamp,
-  tx_hash, 
-  from_address as user_address,
-  case when contract_address = '0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000' then '0x4200000000000000000000000000000000000006' else contract_address end as token_address,
-  raw_amount
-  from optimism.core.fact_token_transfers
-  where origin_to_address = '0x4200000000000000000000000000000000000010' 
-  and block_timestamp::date >= CURRENT_DATE - 180
-),
-op_bout_p as (
-  select distinct a.user_address,
-  'canonical' as bridge,
-  count(distinct a.tx_hash) as num_transactions,
-  sum((a.raw_amount/pow(10,p.decimals)) * p.price) as vol_usd_out
-from base_op_bout a
-left join optimism.core.fact_hourly_token_prices p 
-  on date_trunc('hour', a.block_timestamp) = p.hour and a.token_address = p.token_address 
-group by 1,2
-),
-base_final_bridges as (
-select user_address, bridge, num_transactions, vol_usd_in, vol_usd_out
-from 
-synapse_across
+with bridges as (
+    -- multichain addresses
+select distinct address, address_name, project_name from optimism.core.dim_labels where project_name = 'multichain' and address_name like '%any%'
 union
-select user_address, bridge, num_transactions, vol_usd_in, 0 as vol_usd_out
-from 
-hop_op_bridge_in
-union 
-select user_address, bridge, num_transactions, 0 as vol_usd_in, vol_usd_out
-from op_bout_p
+    -- should cover optimism, polynetwork, hop protocol, synthetix, stargate finance, dforce, celer network, layerzero
+select distinct address, address_name, project_name from crosschain.core.address_labels where label_subtype = 'bridge' and blockchain = 'optimism'
+
+),
+  to_bridge AS (
+  SELECT FROM_ADDRESS as user_address, 
+  bridges.project_name as bridge_name, 
+  optimism.core.ez_token_transfers.CONTRACT_ADDRESS as token_contract,
+  SUM(coalesce(amount,0)) as out_token_volume, 
+    SUM(coalesce(amount_usd,0)) as out_usd_volume, 
+    COUNT(*) as n_out
+  FROM optimism.core.ez_token_transfers
+    LEFT JOIN bridges ON optimism.core.ez_token_transfers.TO_ADDRESS = bridges.address 
+WHERE 
+TO_ADDRESS IN (SELECT address FROM bridges) AND 
+ BLOCK_TIMESTAMP >= current_date - 90
+GROUP BY user_address, token_contract, bridge_name
+    --and FROM_ADDRESS = '0x228406cecfeb7a478ef21fe415800f93019732ae'
+),
+from_bridge as (
+  SELECT TO_ADDRESS as user_address, 
+  bridges.project_name as bridge_name, 
+  optimism.core.ez_token_transfers.CONTRACT_ADDRESS as token_contract,
+  SUM(coalesce(amount,0)) as in_token_volume, 
+    SUM(coalesce(amount_usd,0)) as in_usd_volume, 
+    COUNT(*) as n_in
+  FROM optimism.core.ez_token_transfers
+    LEFT JOIN bridges ON optimism.core.ez_token_transfers.FROM_ADDRESS = bridges.address 
+WHERE 
+FROM_ADDRESS IN (SELECT address FROM bridges) AND 
+ BLOCK_TIMESTAMP >= current_date - 90
+GROUP BY user_address, token_contract, bridge_name
+),
+  
+  -- user_address | bridge_name | token_contract | token_symbol | n_in | n_out | in_token_volume | in_usd_volume | out_token_volume | out_usd_volume
+allbridge as (
+SELECT user_address, bridge_name, token_contract, 
+  n_in, n_out, in_token_volume, in_usd_volume, out_token_volume, out_usd_volume  
+   FROM from_bridge NATURAL FULL OUTER JOIN to_bridge
 )
-select
-distinct user_address,
-bridge as bridge_name, 
-sum(num_transactions) as num_bridges,
-sum(vol_usd_in) as vol_usd_bridge_in,
-sum(vol_usd_out) as vol_usd_bridge_out
-from base_final_bridges
-group by 1,2
+select user_address,
+bridge_name as bridge_name,
+token_contract,
+sum(n_in) as n_in,
+sum(n_out) as n_out,
+sum(in_token_volume) as in_token_volume,
+sum(in_usd_volume) as in_usd_volume,
+sum(out_token_volume) as out_token_volume,
+sum(out_usd_volume) as out_usd_volume
+from allbridge
+group by 1,2,3;

@@ -61,7 +61,7 @@ GROUP BY user_address, exchange_name, token_contract, token_symbol
         ETH_FROM_ADDRESS NOT IN (SELECT ADDRESS FROM cex_addresses) AND
         ETH_TO_ADDRESS IN (SELECT ADDRESS FROM cex_addresses)
 GROUP BY user_address, exchange_name, token_contract, token_symbol
-   ), 
+   )
    
 SELECT user_address, exchange_name, token_contract, token_symbol,
    n_deposits, n_withdrawals, dep_token_volume, dep_usd_volume, wdraw_token_volume, wdraw_usd_volume  

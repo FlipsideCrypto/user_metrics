@@ -1,71 +1,52 @@
-WITH wdraws AS (SELECT
-to_address AS user_address,
-tt.contract_address AS token_contract,
-symbol AS token_symbol,
-count(tt.tx_hash) AS n_withdrawals,
-sum(raw_amount) / pow(10, decimals) AS wdraw_token_volume,
-sum(raw_amount) / pow(10, decimals) * price AS wdraw_usd_volume
-FROM
-optimism.core.fact_token_transfers tt
-JOIN optimism.core.FACT_HOURLY_TOKEN_PRICES pp 
-ON date_trunc('hour', tt.block_timestamp) = pp.hour
-AND tt.contract_address = pp.token_address
-WHERE
-block_timestamp > current_date - 180
-AND
-from_address IN
-(SELECT address 
- FROM crosschain.core.ADDRESS_LABELS
- WHERE blockchain = 'optimism' AND label_type = 'cex' AND label_subtype = 'hot_wallet')
-AND
-to_address NOT IN (
- SELECT address 
- FROM crosschain.core.ADDRESS_LABELS
- WHERE blockchain != 'optimism')
-GROUP BY user_address, token_contract, token_symbol, decimals, price),
-
-deps AS (
-SELECT
-from_address AS user_address,
-tt.contract_address AS token_contract,
-symbol AS token_symbol,
-count(tt.tx_hash) AS n_deposits,
-sum(raw_amount) / pow(10, decimals) AS dep_token_volume,
-sum(raw_amount) / pow(10, decimals) * price AS dep_usd_volume
-FROM
-optimism.core.fact_token_transfers tt
-JOIN optimism.core.FACT_HOURLY_TOKEN_PRICES pp 
-ON date_trunc('hour', tt.block_timestamp) = pp.hour
-AND tt.contract_address = pp.token_address
-WHERE
-block_timestamp > current_date - 180
-AND
-to_address IN
-(SELECT address 
- FROM crosschain.core.ADDRESS_LABELS
- WHERE blockchain = 'optimism' AND label_type = 'cex' AND label_subtype = 'deposit_wallet')
-AND
-from_address NOT IN (
- SELECT address 
- FROM crosschain.core.ADDRESS_LABELS
- WHERE blockchain != 'optimism')
-GROUP BY user_address, token_contract, token_symbol, decimals, price
- )
-SELECT
-COALESCE(ds.user_address, ws.user_address) AS user_address,
-'tbd' AS exchange_name,
-COALESCE(ds.token_contract, ws.token_contract) AS token_contract,
-SPLIT_PART(COALESCE(ds.token_contract, ws.token_contract), '.', 2) AS token_symbol,
-
-COALESCE(n_deposits, 0) AS n_deposits,
-COALESCE(n_withdrawals, 0) AS n_withdrawals,
-
-COALESCE(dep_token_volume, 0) AS dep_token_volume,
-COALESCE(dep_usd_volume, 0) AS dep_usd_volume,
-COALESCE(wdraw_token_volume, 0) AS wdraw_token_volume,
-COALESCE(wdraw_usd_volume, 0) AS wdraw_usd_volume
-
-FROM deps ds
-FULL OUTER JOIN wdraws ws ON ds.user_address = ws.user_address
-AND ds.token_contract = ws.token_contract
-
+ WITH cex_addresses AS (
+    SELECT ADDRESS, LABEL_TYPE, project_name as label
+    FROM optimism.CORE.DIM_LABELS
+    WHERE LABEL_TYPE = 'cex'
+),
+   eth_from_cex AS (
+  SELECT NULL as token_contract, 'eth' as token_symbol,
+   COUNT(*) as n_withdrawals, SUM(AMOUNT) as wdraw_token_volume, SUM(AMOUNT_USD) as wdraw_usd_volume,
+  eth_TO_ADDRESS as user_address, cex_addresses.LABEL as exchange_name
+  FROM optimism.CORE.EZ_eth_TRANSFERS LEFT JOIN cex_addresses ON eth_FROM_ADDRESS = cex_addresses.ADDRESS
+  WHERE BLOCK_TIMESTAMP >= DATEADD('day', -90, CURRENT_DATE()) AND
+        eth_FROM_ADDRESS IN (SELECT ADDRESS FROM cex_addresses) AND
+        eth_TO_ADDRESS NOT IN (SELECT ADDRESS FROM cex_addresses)
+GROUP BY user_address, exchange_name, token_contract, token_symbol
+   ),
+from_cex AS (
+  SELECT CONTRACT_ADDRESS as token_contract, SYMBOL as token_symbol,
+   COUNT(*) as n_withdrawals, SUM(AMOUNT) as wdraw_token_volume, SUM(AMOUNT_USD) as wdraw_usd_volume,
+  TO_ADDRESS as user_address, cex_addresses.LABEL as exchange_name
+  FROM optimism.CORE.EZ_TOKEN_TRANSFERS LEFT JOIN cex_addresses ON FROM_ADDRESS = cex_addresses.ADDRESS
+  WHERE BLOCK_TIMESTAMP >= DATEADD('day', -90, CURRENT_DATE()) AND
+        FROM_ADDRESS IN (SELECT ADDRESS FROM cex_addresses) AND
+        TO_ADDRESS NOT IN (SELECT ADDRESS FROM cex_addresses)
+GROUP BY user_address, exchange_name, token_contract, token_symbol
+),
+to_cex AS (
+  SELECT CONTRACT_ADDRESS as token_contract, SYMBOL as token_symbol,
+    COUNT(*) as n_deposits, SUM(AMOUNT) as dep_token_volume, SUM(AMOUNT_USD) as dep_usd_volume,
+   FROM_ADDRESS as user_address, cex_addresses.LABEL as exchange_name
+  FROM optimism.CORE.EZ_TOKEN_TRANSFERS LEFT JOIN cex_addresses ON TO_ADDRESS = cex_addresses.ADDRESS
+  WHERE BLOCK_TIMESTAMP >= DATEADD('day', -90, CURRENT_DATE()) AND
+        FROM_ADDRESS NOT IN (SELECT ADDRESS FROM cex_addresses) AND
+        TO_ADDRESS IN (SELECT ADDRESS FROM cex_addresses)
+GROUP BY user_address, exchange_name, token_contract, token_symbol
+),
+    eth_to_cex AS (
+  SELECT NULL as token_contract, 'eth' as token_symbol,
+   COUNT(*) as n_deposits, SUM(AMOUNT) as dep_token_volume, SUM(AMOUNT_USD) as dep_usd_volume,
+  eth_FROM_ADDRESS as user_address, cex_addresses.LABEL as exchange_name
+  FROM optimism.CORE.EZ_eth_TRANSFERS LEFT JOIN cex_addresses ON eth_TO_ADDRESS = cex_addresses.ADDRESS
+  WHERE BLOCK_TIMESTAMP >= DATEADD('day', -90, CURRENT_DATE()) AND
+        eth_FROM_ADDRESS NOT IN (SELECT ADDRESS FROM cex_addresses) AND
+        eth_TO_ADDRESS IN (SELECT ADDRESS FROM cex_addresses)
+GROUP BY user_address, exchange_name, token_contract, token_symbol
+   )
+   
+SELECT user_address, exchange_name, token_contract, token_symbol,
+   n_deposits, n_withdrawals, dep_token_volume, dep_usd_volume, wdraw_token_volume, wdraw_usd_volume  
+   FROM from_cex NATURAL FULL OUTER JOIN to_cex
+ UNION (SELECT user_address, exchange_name, token_contract, token_symbol,
+   n_deposits, n_withdrawals, dep_token_volume, dep_usd_volume, wdraw_token_volume, wdraw_usd_volume 
+   FROM eth_from_cex NATURAL FULL OUTER JOIN eth_to_cex)
