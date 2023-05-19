@@ -29,9 +29,9 @@ const TextInput = ({ configuration, value, setValue }) => {
         environmentId: "88e7cf93-cd57-4664-b5da-9682b46074e0",
         eventsCallbacks: {
           onAuthSuccess: async (args) => {
-            console.log("onAuthSuccess was called", args);
             if (args?.isAuthenticated) {
               let wallets = [];
+              wallets.push("dynamicId:" + args.user?.userId);
 
               if (window?.keplr) {
                 await Promise.all(
@@ -46,20 +46,21 @@ const TextInput = ({ configuration, value, setValue }) => {
                     }
                   })
                 );
-
-                // also add evm chains
-                args?.user?.verifiedCredentials?.map((wallet) => {
-                  wallets.push(wallet.walletName + ":" + wallet.address);
-                });
-
-                setValue(wallets.toString());
               }
+
+              // also add evm chains
+              args?.user?.verifiedCredentials?.map((wallet) => {
+                wallets.push(wallet.walletName + ":" + wallet.address);
+              });
+              console.log("wallets: ", wallets);
+
+              setValue(wallets.toString());
             }
           },
           onLinkSuccess: async (args) => {
-            console.log("onLinkSuccess was called", args);
             if (args?.isAuthenticated) {
               let wallets = [];
+              wallets.push("dynamicId:" + args?.user?.userId);
               if (window?.keplr) {
                 await Promise.all(
                   chains.map(async (chain) => {
@@ -73,13 +74,13 @@ const TextInput = ({ configuration, value, setValue }) => {
                     }
                   })
                 );
-                // also add evm chains
-                args?.user?.verifiedCredentials?.map((wallet) => {
-                  wallets.push(wallet.walletName + ":" + wallet.address);
-                });
-
-                setValue(wallets.toString());
               }
+              // also add evm chains
+              args?.user?.verifiedCredentials?.map((wallet) => {
+                wallets.push(wallet.walletName + ":" + wallet.address);
+              });
+
+              setValue(wallets.toString());
             }
           },
         },
