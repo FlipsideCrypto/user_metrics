@@ -8,6 +8,7 @@ const DynamicAppUser = (props) => {
   useEffect(async () => {
     if (user?.verifiedCredentials) {
       let wallets = [];
+      wallets.push("dynamicId:" + user?.userId);
       if (window?.keplr) {
         await Promise.all(
           props.chains.map(async (chain) => {
@@ -19,12 +20,12 @@ const DynamicAppUser = (props) => {
             }
           })
         );
-        // also add evm chains
-        user?.verifiedCredentials?.map((wallet) => {
-          wallets.push(wallet.walletName + ":" + wallet.address);
-        });
-        props.setNewValue(wallets.toString());
       }
+      // also add evm chains
+      user?.verifiedCredentials?.map((wallet) => {
+        wallets.push(wallet.walletName + ":" + wallet.address);
+      });
+      props.setNewValue(wallets.toString());
     }
   }, [user]);
 
