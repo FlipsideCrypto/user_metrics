@@ -69,6 +69,7 @@ console.log(rows);
 rows.map((row) => {
   const cosmos = row;
   const current = {};
+  current["cosmos"] = cosmos;
   targets.forEach((target) => {
     try {
       current[target] = lookup(cosmos, target);
