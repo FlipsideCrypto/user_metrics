@@ -41,7 +41,11 @@ rows.shift();
 const addresses = [];
 console.log(rows);
 rows.map((row) => {
-  const cosmos = row;
+  let cosmos = row;
+  if (cosmos.endsWith('"') && cosmos.startsWith('"')) {
+    cosmos = cosmos.substring(1, cosmos.length - 1);
+  }
+
   const current = {};
   // current["cosmos"] = cosmos;
   targets.forEach((target) => {
