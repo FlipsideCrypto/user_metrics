@@ -2,15 +2,15 @@ import * as fs from "fs";
 import pkg from "convert-bech32-address";
 const { lookup } = pkg;
 
-
 /*
  *
  * Set Filename here!
- * 
+ *
  */
 const fileName = "test.csv";
 
 const targets = [
+  "cosmos",
   "axelar",
   "osmo",
   "evmos",
@@ -43,7 +43,7 @@ console.log(rows);
 rows.map((row) => {
   const cosmos = row;
   const current = {};
-  current["cosmos"] = cosmos;
+  // current["cosmos"] = cosmos;
   targets.forEach((target) => {
     try {
       current[target] = lookup(cosmos, target);
