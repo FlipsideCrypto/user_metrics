@@ -1,40 +1,14 @@
 import * as fs from "fs";
-
-const fileName = "test.csv";
-// import { lookup } from "convert-bech32-address";
-// var converter = import("./convert-bech32-address.js");
 import pkg from "convert-bech32-address";
 const { lookup } = pkg;
 
-class Addresses {
-  constructor(
-    cosmos = "",
-    axelar = "",
-    osmo = "",
-    evmos = "",
-    inj = "",
-    stride = "",
-    juno = "",
-    secret = "",
-    stars = "",
-    umee = "",
-    agoric = "",
-    persistence = ""
-  ) {
-    this.cosmos = cosmos;
-    this.axelar = axelar;
-    this.osmo = osmo;
-    this.evmos = evmos;
-    this.inj = inj;
-    this.stride = stride;
-    this.juno = juno;
-    this.secret = secret;
-    this.stars = stars;
-    this.umee = umee;
-    this.agoric = agoric;
-    this.persistence = persistence;
-  }
-}
+
+/*
+ *
+ * Set Filename here!
+ * 
+ */
+const fileName = "test.csv";
 
 const targets = [
   "axelar",
@@ -84,10 +58,3 @@ rows.map((row) => {
 fs.writeFileSync("addresses.json", JSON.stringify(addresses, null, 2));
 
 console.log(addresses);
-
-// var newAddress = converter.lookup('cosmos1r5qkmvn9hnv0pugejr73639w07d2mughnm7qxa','juno');
-
-// console.log(newAddress);
-
-// return new Addresses(cosmos, axelar, osmo, evmos, inj, stride, juno, secret, stars, umee, agoric, persistence);
-// }
