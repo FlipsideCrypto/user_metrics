@@ -1,20 +1,14 @@
 import { reactShinyInput } from "reactR";
 import { DynamicContextProvider, DynamicWidget } from "@dynamic-labs/sdk-react";
-
 import DynamicAppUser from "./DynamicAppUser.jsx";
-
-// Access the Dynamic Configuration Dashboard at:
-// https://app.dynamic.xyz/dashboard/configurations
-// 
-// You must have a valid invite, but can just access this with your email if 
-// an invite has been sent.
 
 const TextInput = ({ configuration, value, setValue }) => {
   return (
     <DynamicContextProvider
       settings={{
         appName: "FlowScored",
-        environmentId: "c6ef9d8c-6b8d-441a-9f67-72b728cef538", // DANGEROUS: Live environment
+        multiWallet: true,
+        environmentId: "c6ef9d8c-6b8d-441a-9f67-72b728cef538",
         eventsCallbacks: {
           onAuthSuccess: (args) => {
             console.log("onAuthSuccess was called", args);
@@ -39,8 +33,7 @@ const TextInput = ({ configuration, value, setValue }) => {
         },
       }}
     >
-      <DynamicWidget innerButtonComponent='Connect your wallets' />
-
+      <DynamicWidget />
       <DynamicAppUser setNewValue={setValue} />
     </DynamicContextProvider>
   );
