@@ -1,7 +1,7 @@
 {
   "private": true,
   "dependencies": {
-    "@dynamic-labs/sdk-react": "^0.15.0",
+    "@dynamic-labs/sdk-react": "^0.17.13",
     "react": "^18.2.0",
     "reactstrap": "^8.9.0"
   },
