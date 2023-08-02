@@ -1,2 +1,0 @@
-"metric_name","category","order_in_category","slider_end","by_token","app_data_name","weight_variable","display_title","split_direction","description_text"
-"nft_n_trades","NFTs",1,0,"n","by.user",NA,"# NFT Trades","greater","%s users made between %s and %s NFT trades in the last 90 days"
