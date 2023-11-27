@@ -1,5 +1,4 @@
-import { useDynamicContext } from "@dynamic-labs/sdk-react";
-import { Button } from "reactstrap";
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { useEffect } from "react";
 
 const DynamicAppUser = (props) => {
