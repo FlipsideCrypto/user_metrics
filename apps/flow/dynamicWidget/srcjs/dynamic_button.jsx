@@ -1,5 +1,6 @@
 import { reactShinyInput } from "reactR";
-import { DynamicContextProvider, DynamicWidget } from "@dynamic-labs/sdk-react";
+import { DynamicContextProvider, DynamicWidget } from "@dynamic-labs/sdk-react-core";
+import { FlowWalletConnectors } from "@dynamic-labs/flow";
 
 import DynamicAppUser from "./DynamicAppUser.jsx";
 
@@ -15,6 +16,7 @@ const TextInput = ({ configuration, value, setValue }) => {
       settings={{
         appName: "FlowScored",
         environmentId: "c6ef9d8c-6b8d-441a-9f67-72b728cef538", // DANGEROUS: Live environment
+        connectors: [FlowWalletConnectors],
         eventsCallbacks: {
           onAuthSuccess: (args) => {
             console.log("onAuthSuccess was called", args);

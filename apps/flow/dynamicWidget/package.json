@@ -1,9 +1,11 @@
 {
   "private": true,
   "dependencies": {
-    "@dynamic-labs/sdk-react": "^0.17.13",
+    "@dynamic-labs/flow": "^0.19.3",
+    "@dynamic-labs/sdk-react-core": "^0.19.3",
     "react": "^18.2.0",
-    "reactstrap": "^8.9.0"
+    "reactstrap": "^8.9.0",
+    "viem": "1.5.3"
   },
   "devDependencies": {
     "@babel/core": "^7.2.0",
@@ -12,7 +14,7 @@
     "babel-loader": "^8.0.4",
     "css-loader": "^5.0.1",
     "style-loader": "^2.0.0",
-    "webpack": "^4.27.1",
+    "webpack": "^5.89.0",
     "webpack-cli": "^3.1.2"
   },
   "scripts": {
