@@ -1,4 +1,5 @@
 var path = require('path');
+const webpack = require('webpack');
 
 module.exports = {
     entry: path.join(__dirname, 'srcjs', 'dynamic_button.jsx'),
@@ -22,6 +23,16 @@ module.exports = {
             }
         ]
     },
+    plugins: [
+        // Work around for Buffer is undefined:
+        // https://github.com/webpack/changelog-v5/issues/10
+        new webpack.ProvidePlugin({
+            Buffer: ['buffer', 'Buffer'],
+        }),
+        new webpack.ProvidePlugin({
+            process: 'process/browser',
+        }),
+    ],
     externals: {
         'react': 'window.React',
         'react-dom': 'window.ReactDOM',
@@ -30,5 +41,13 @@ module.exports = {
     stats: {
         colors: true
     },
-    devtool: 'source-map'
+    devtool: 'source-map',
+    resolve: {
+        extensions: [ '.ts', '.js' ],
+        fallback: {
+            "stream": require.resolve("stream-browserify"),
+            "buffer": require.resolve("buffer"),
+            "process/browser": require.resolve("process/browser"),
+        }
+    },
 };
